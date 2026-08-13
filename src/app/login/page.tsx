@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // --- SVG ICONS ---
 const MailIcon = () => (
@@ -19,6 +20,7 @@ const LockIcon = () => (
 );
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -27,7 +29,7 @@ export default function LoginPage() {
     e.preventDefault();
     console.log("Submit Login", { email, password, rememberMe });
     // Handle mock log in transition
-    alert(`Logged in successfully with ${email}!`);
+    router.push("/dashboard");
   };
 
   return (

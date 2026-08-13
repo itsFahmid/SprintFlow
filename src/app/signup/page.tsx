@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // --- SVG ICONS ---
 const UserIcon = () => (
@@ -26,6 +27,7 @@ const LockIcon = () => (
 );
 
 export default function SignupPage() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +36,7 @@ export default function SignupPage() {
     e.preventDefault();
     console.log("Submit Signup", { name, email, password });
     // Handle mock registration transition
-    alert(`Account created successfully for ${name}! Please verify your email.`);
+    router.push("/dashboard");
   };
 
   return (
