@@ -36,7 +36,7 @@ export default function SignupPage() {
     e.preventDefault();
     console.log("Submit Signup", { name, email, password });
     // Handle mock registration transition
-    router.push("/dashboard");
+    router.push("/onboarding");
   };
 
   return (
