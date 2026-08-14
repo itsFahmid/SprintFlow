@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const sessionCookie = cookieStore.get("sprintflow_session");
 
     if (sessionCookie?.value) {
-      deleteSession(sessionCookie.value);
+      await deleteSession(sessionCookie.value);
     }
 
     // Clear cookie
