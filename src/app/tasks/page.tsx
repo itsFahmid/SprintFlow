@@ -99,6 +99,11 @@ interface BreakdownSprint {
   subtasks: string[];
 }
 
+interface ParsedTask {
+  name: string;
+  priority: "High" | "Medium" | "Low";
+}
+
 export default function TasksPage() {
   const router = useRouter();
 
@@ -109,33 +114,23 @@ export default function TasksPage() {
     `- Implement OAuth login flow with Google + email\n- Fix dashboard loading bug on slow connections\n- Write Q3 product update email to customers\n- Review Sara's PR #218 and leave comments\n- Design onboarding empty states + illustrations\n- Plan next sprint and groom the backlog`
   );
 
-  // Sprints state for AI Breakdown
-  const [sprints, setSprints] = useState<BreakdownSprint[]>([
-    {
-      id: "01",
-      title: "Set up OAuth providers & routes",
-      duration: 25,
-      priority: "High",
-      approved: true,
-      subtasks: ["Configure Google OAuth client", "Add email/password fallback", "Wire up redirect routes"]
-    },
-    {
-      id: "02",
-      title: "Debug dashboard slow-load",
-      duration: 30,
-      priority: "High",
-      approved: false,
-      subtasks: ["Profile network waterfall", "Add skeleton loaders", "Cache initial query"]
-    },
-    {
-      id: "03",
-      title: "Draft Q3 product update email",
-      duration: 20,
-      priority: "Medium",
-      approved: false,
-      subtasks: ["Outline 3 key updates", "Write first draft", "Add CTA + screenshots"]
+  // AI API Configuration Key States
+  const [apiKey, setApiKey] = useState("");
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [tempApiKey, setTempApiKey] = useState("");
+
+  // Dynamic analysis lists
+  const [aiTasks, setAiTasks] = useState<ParsedTask[]>([]);
+  const [sprints, setSprints] = useState<BreakdownSprint[]>([]);
+
+  // Load saved key from localStorage on mount
+  useEffect(() => {
+    const savedKey = localStorage.getItem("sprintflow_gemini_api_key");
+    if (savedKey) {
+      setApiKey(savedKey);
+      setTempApiKey(savedKey);
     }
-  ]);
+  }, []);
 
   // Derived tasks count
   const detectedTasksCount = taskText
@@ -143,12 +138,135 @@ export default function TasksPage() {
     .map(line => line.trim())
     .filter(line => line.length > 0).length;
 
-  const handleAnalyze = () => {
+  // AI Analysis Execution
+  const handleAnalyze = async (bypassKeyCheck = false) => {
     if (detectedTasksCount === 0) return;
+
+    // Check for API Key if not bypassed
+    if (!apiKey && !bypassKeyCheck) {
+      setShowApiKeyModal(true);
+      return;
+    }
+
     setViewState("loading");
+
+    try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (apiKey) {
+        headers["x-gemini-api-key"] = apiKey;
+      }
+
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ taskList: taskText })
+      });
+
+      if (res.status === 401) {
+        // Unauthorised / Missing key on server side
+        setViewState("input");
+        setShowApiKeyModal(true);
+        return;
+      }
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `API error code ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      // Set dynamic lists
+      setAiTasks(data.tasks || []);
+      setSprints(
+        (data.sprints || []).map((s: any) => ({
+          ...s,
+          approved: false
+        }))
+      );
+      setViewState("breakdown");
+
+    } catch (error: any) {
+      console.warn("AI breakdown failed, using local offline simulator fallback:", error);
+      alert(`AI Analysis failed: ${error.message || "Unknown error"}. Falling back to simulated offline planner.`);
+      triggerFallbackSimulation();
+    }
+  };
+
+  // Offline simulation fallback logic
+  const triggerFallbackSimulation = () => {
+    // Mimic API delay before outputting standard mock breakdown
     setTimeout(() => {
+      setAiTasks([
+        { name: "Implement OAuth login flow", priority: "High" },
+        { name: "Fix dashboard loading bug", priority: "High" },
+        { name: "Write Q3 product update email", priority: "Medium" },
+        { name: "Review Sara's PR #218", priority: "Medium" },
+        { name: "Design onboarding empty states", priority: "Low" },
+        { name: "Plan next sprint & groom backlog", priority: "Low" }
+      ]);
+      setSprints([
+        {
+          id: "01",
+          title: "Set up OAuth providers & routes",
+          duration: 25,
+          priority: "High",
+          approved: true,
+          subtasks: ["Configure Google OAuth client", "Add email/password fallback", "Wire up redirect routes"]
+        },
+        {
+          id: "02",
+          title: "Debug dashboard slow-load",
+          duration: 30,
+          priority: "High",
+          approved: false,
+          subtasks: ["Profile network waterfall", "Add skeleton loaders", "Cache initial query"]
+        },
+        {
+          id: "03",
+          title: "Draft Q3 product update email",
+          duration: 20,
+          priority: "Medium",
+          approved: false,
+          subtasks: ["Outline 3 key updates", "Write first draft", "Add CTA + screenshots"]
+        }
+      ]);
       setViewState("breakdown");
     }, 1400);
+  };
+
+  const handleSaveApiKey = () => {
+    localStorage.setItem("sprintflow_gemini_api_key", tempApiKey);
+    setApiKey(tempApiKey);
+    setShowApiKeyModal(false);
+    
+    // Automatically trigger analysis with newly entered key
+    setTimeout(() => {
+      setViewState("loading");
+      // Call endpoint directly using tempApiKey to prevent async state lag
+      fetch("/api/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-gemini-api-key": tempApiKey
+        },
+        body: JSON.stringify({ taskList: taskText })
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || `API Call failed: ${res.status}`);
+          }
+          const data = await res.json();
+          setAiTasks(data.tasks || []);
+          setSprints((data.sprints || []).map((s: any) => ({ ...s, approved: false })));
+          setViewState("breakdown");
+        })
+        .catch((error: any) => {
+          alert(`AI Analysis failed: ${error.message || "Unknown error"}. Falling back to simulated offline planner.`);
+          triggerFallbackSimulation();
+        });
+    }, 100);
   };
 
   const handleToggleApprove = (id: string) => {
@@ -156,7 +274,6 @@ export default function TasksPage() {
   };
 
   const handleGeneratePlan = () => {
-    // Navigate back to dashboard on daily plan creation success
     router.push("/dashboard");
   };
 
@@ -233,7 +350,7 @@ export default function TasksPage() {
   );
 
   return (
-    <div className="min-h-screen flex bg-slate-50 text-slate-800 font-sans">
+    <div className="min-h-screen flex bg-slate-50 text-slate-800 font-sans relative">
       
       {/* --- DESKTOP SIDEBAR --- */}
       <aside className="w-[260px] bg-white border-r border-slate-200/60 p-6 flex flex-col justify-between shrink-0 hidden lg:flex">
@@ -249,7 +366,7 @@ export default function TasksPage() {
 
       {/* --- MOBILE NAVIGATION DRAWER --- */}
       <div 
-        className={`fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
+        className={`fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
           isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`} 
         onClick={() => setIsMobileMenuOpen(false)}
@@ -286,7 +403,6 @@ export default function TasksPage() {
         {/* Header Row */}
         <header className="h-20 bg-white border-b border-slate-200/50 flex items-center justify-between px-6 md:px-8 shrink-0">
           <div className="flex items-center gap-3">
-            {/* Hamburger Button on Mobile */}
             <button 
               className="lg:hidden p-2 -ml-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
               onClick={() => setIsMobileMenuOpen(true)}
@@ -299,7 +415,6 @@ export default function TasksPage() {
               </svg>
             </button>
             
-            {/* Dynamic Header Titles based on States */}
             {viewState === "input" && (
               <div>
                 <h1 className="font-heading font-extrabold text-lg md:text-xl text-slate-900 leading-tight">New Tasks</h1>
@@ -315,12 +430,11 @@ export default function TasksPage() {
             {viewState === "breakdown" && (
               <div>
                 <h1 className="font-heading font-extrabold text-lg md:text-xl text-slate-900 leading-tight">AI Sprint Breakdown</h1>
-                <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 font-medium">6 tasks • 8 sprints • ~3h 20m total focus</p>
+                <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 font-medium">{aiTasks.length} tasks • {sprints.length} sprints • ~{sprints.reduce((acc, s) => acc + s.duration, 0)}m total focus</p>
               </div>
             )}
           </div>
 
-          {/* Action buttons on Header (only for Breakdown view) */}
           {viewState === "breakdown" && (
             <div className="flex items-center gap-3">
               <button 
@@ -347,7 +461,6 @@ export default function TasksPage() {
           {viewState === "input" && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start w-full">
               
-              {/* Left Column: Input text area */}
               <div className="lg:col-span-8 bg-white border border-slate-200/50 rounded-3xl p-6 md:p-8 space-y-6">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#7c3aed] flex items-center justify-center shrink-0">
@@ -368,9 +481,8 @@ export default function TasksPage() {
                   ></textarea>
                 </div>
 
-                {/* Status pills */}
                 <div className="flex flex-wrap gap-2 text-xs">
-                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-green-50 border border-green-200/30 text-green-600 font-bold">
+                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-green-50 border border-green-200/30 text-green-600 font-bold animate-pulse">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                     {detectedTasksCount} tasks detected
                   </span>
@@ -382,16 +494,25 @@ export default function TasksPage() {
                   </span>
                 </div>
 
-                {/* Buttons */}
                 <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                  <button 
-                    className="btn btn-primary h-12 px-8 text-sm font-bold gap-2"
-                    onClick={handleAnalyze}
-                    disabled={detectedTasksCount === 0}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
-                    Analyze Tasks
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button 
+                      className="btn btn-primary h-12 px-8 text-sm font-bold gap-2"
+                      onClick={() => handleAnalyze(false)}
+                      disabled={detectedTasksCount === 0}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
+                      Analyze Tasks
+                    </button>
+                    {apiKey && (
+                      <button 
+                        className="text-xs text-slate-400 hover:text-slate-600 font-semibold px-2 py-1 transition-colors"
+                        onClick={() => setShowApiKeyModal(true)}
+                      >
+                        ⚙ Change API Key
+                      </button>
+                    )}
+                  </div>
                   <button 
                     className="h-12 px-6 border border-slate-200 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
                     onClick={() => setTaskText("")}
@@ -401,12 +522,10 @@ export default function TasksPage() {
                 </div>
               </div>
 
-              {/* Right Column: How it works info */}
               <div className="lg:col-span-4 bg-white border border-slate-200/50 rounded-3xl p-6 md:p-8 space-y-6">
                 <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider">How it works</h3>
                 
                 <div className="space-y-6">
-                  {/* Step 1 */}
                   <div className="flex gap-4">
                     <div className="w-8 h-8 rounded-full bg-purple-50 text-[#7c3aed] font-heading font-extrabold text-sm flex items-center justify-center shrink-0">
                       1
@@ -417,7 +536,6 @@ export default function TasksPage() {
                     </div>
                   </div>
 
-                  {/* Step 2 */}
                   <div className="flex gap-4">
                     <div className="w-8 h-8 rounded-full bg-purple-50 text-[#7c3aed] font-heading font-extrabold text-sm flex items-center justify-center shrink-0">
                       2
@@ -428,7 +546,6 @@ export default function TasksPage() {
                     </div>
                   </div>
 
-                  {/* Step 3 */}
                   <div className="flex gap-4">
                     <div className="w-8 h-8 rounded-full bg-purple-50 text-[#7c3aed] font-heading font-extrabold text-sm flex items-center justify-center shrink-0">
                       3
@@ -451,11 +568,11 @@ export default function TasksPage() {
 
           {/* --- STATE 2: LOADING ANALYZER STATE --- */}
           {viewState === "loading" && (
-            <div className="flex-1 flex flex-col items-center justify-center py-20 w-full">
+            <div className="flex-1 flex flex-col items-center justify-center py-20 w-full animate-pulse">
               <div className="w-16 h-16 border-4 border-purple-100 border-t-[#7c3aed] rounded-full animate-spin mb-6"></div>
               <h2 className="font-heading font-extrabold text-lg text-slate-900 mb-2">Analyzing your tasks...</h2>
               <p className="text-sm text-slate-400 font-medium max-w-sm text-center leading-relaxed">
-                Our model is categorizing complexity, calculating energy curves, and mapping your list into optimized focus sprints.
+                Calling Google Gemini models to categorize complexity, compute sprint energy distributions, and group task blocks...
               </p>
             </div>
           )}
@@ -468,49 +585,32 @@ export default function TasksPage() {
               <div className="lg:col-span-5 bg-white border border-slate-200/50 rounded-3xl p-6 md:p-8 space-y-6">
                 <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider">Your tasks</h3>
                 
-                <ul className="space-y-4 list-none p-0 text-sm">
-                  <li className="flex items-center gap-3">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>
-                    <span className="font-semibold text-slate-700">Implement OAuth login flow</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>
-                    <span className="font-semibold text-slate-700">Fix dashboard loading bug</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="w-2.5 h-2.5 rounded-full bg-orange-500 shrink-0"></span>
-                    <span className="font-semibold text-slate-700">Write Q3 product update email</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="w-2.5 h-2.5 rounded-full bg-orange-500 shrink-0"></span>
-                    <span className="font-semibold text-slate-700">Review Sara's PR #218</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="w-2.5 h-2.5 rounded-full bg-green-500 shrink-0"></span>
-                    <span className="font-semibold text-slate-700">Design onboarding empty states</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="w-2.5 h-2.5 rounded-full bg-green-500 shrink-0"></span>
-                    <span className="font-semibold text-slate-700">Plan next sprint & groom backlog</span>
-                  </li>
+                <ul className="space-y-4 list-none p-0 text-sm animate-fade-in">
+                  {aiTasks.map((task, idx) => (
+                    <li key={idx} className="flex items-center gap-3">
+                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                        task.priority === "High" ? "bg-red-500" :
+                        task.priority === "Medium" ? "bg-orange-500" : "bg-green-500"
+                      }`}></span>
+                      <span className="font-semibold text-slate-700">{task.name}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
 
               {/* Right Column: AI Grouped Sprints */}
               <div className="lg:col-span-7 space-y-6">
                 
-                {/* Purple header alert banner */}
                 <div className="bg-purple-50 border border-purple-100 rounded-2xl p-5 flex items-start gap-4">
                   <div className="text-xl leading-none pt-0.5">✦</div>
                   <div>
-                    <h4 className="font-heading font-extrabold text-sm text-[#7c3aed] mb-1">AI grouped your tasks into 8 focused sprints</h4>
+                    <h4 className="font-heading font-extrabold text-sm text-[#7c3aed] mb-1">AI grouped your tasks into {sprints.length} focused sprints</h4>
                     <p className="text-xs text-[#7c3aed]/80 leading-relaxed font-medium">
                       Ordered by priority and energy. Tweak anything before generating your day.
                     </p>
                   </div>
                 </div>
 
-                {/* Sprints List Container */}
                 <div className="space-y-4">
                   {sprints.map((sprint) => (
                     <div 
@@ -520,10 +620,8 @@ export default function TasksPage() {
                       }`}
                     >
                       
-                      {/* Sprint Card Header */}
                       <div className="flex flex-wrap items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 mb-4">
                         <div className="flex items-center gap-4">
-                          {/* Circle badge identifier */}
                           <div className="w-10 h-10 bg-purple-50 text-[#7c3aed] font-heading font-extrabold rounded-xl flex items-center justify-center shrink-0">
                             {sprint.id}
                           </div>
@@ -540,7 +638,6 @@ export default function TasksPage() {
                           </div>
                         </div>
 
-                        {/* Inline Actions */}
                         <div className="flex items-center gap-3.5">
                           <button aria-label="Refresh sprint"><RefreshIcon /></button>
                           <button aria-label="Edit sprint"><EditIcon /></button>
@@ -558,14 +655,13 @@ export default function TasksPage() {
                         </div>
                       </div>
 
-                      {/* Sprint Card Checklists */}
                       <div className="space-y-3">
                         {sprint.subtasks.map((taskName, subidx) => (
                           <label key={subidx} className="flex items-center gap-3 cursor-pointer text-xs md:text-sm">
                             <input 
                               type="checkbox"
                               className="w-4 h-4 rounded text-[#7c3aed] border-slate-300 focus:ring-[#7c3aed]"
-                              defaultChecked={sprint.approved && subidx === 0} // For visual variation
+                              defaultChecked={sprint.approved && subidx === 0}
                             />
                             <span className="text-slate-600 font-medium">{taskName}</span>
                           </label>
@@ -584,6 +680,57 @@ export default function TasksPage() {
         </div>
 
       </main>
+
+      {/* --- GLASSMORPHIC API KEY MODAL --- */}
+      {showApiKeyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="w-full max-w-[460px] bg-white rounded-3xl p-8 shadow-2xl border border-slate-100 space-y-6">
+            <div>
+              <h3 className="font-heading font-extrabold text-lg text-slate-900 mb-1 flex items-center gap-2">
+                <span>🔑</span> Gemini API Key Required
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                Unlock real AI task breakdowns! Please enter your Gemini API Key. Your key is stored securely in your browser's local storage.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5" htmlFor="api-key-input">
+                  Gemini API Key
+                </label>
+                <input
+                  type="password"
+                  id="api-key-input"
+                  className="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#7c3aed] focus:bg-white focus:ring-2 focus:ring-purple-100 transition-all font-mono"
+                  placeholder="AIzaSy..."
+                  value={tempApiKey}
+                  onChange={(e) => setTempApiKey(e.target.value)}
+                />
+              </div>
+
+              <div className="flex flex-col gap-2 pt-2">
+                <button
+                  className="w-full btn btn-primary h-11 text-xs font-bold shadow-sm"
+                  onClick={handleSaveApiKey}
+                  disabled={!tempApiKey.trim()}
+                >
+                  Save API Key & Analyze
+                </button>
+                <button
+                  className="w-full h-11 border border-slate-200 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-50 transition-colors"
+                  onClick={() => {
+                    setShowApiKeyModal(false);
+                    handleAnalyze(true); // Bypass key check to trigger simulated breakdown
+                  }}
+                >
+                  Use Simulated Offline Planner
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
