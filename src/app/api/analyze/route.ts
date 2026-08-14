@@ -9,10 +9,10 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: "Invalid task list input." }, { status: 400 });
     }
 
-    // 1. Fetch API Key from environment or client header
-    let apiKey = process.env.GEMINI_API_KEY;
+    // 1. Fetch API Key (client header takes precedence)
+    let apiKey = req.headers.get("x-gemini-api-key") || undefined;
     if (!apiKey) {
-      apiKey = req.headers.get("x-gemini-api-key") || undefined;
+      apiKey = process.env.GEMINI_API_KEY;
     }
 
     // 2. Return 401 if no key is present (client will show API key modal)
