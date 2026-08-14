@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // --- SVG NAVIGATION & WIDGET ICONS ---
 const DashboardIcon = () => (
@@ -79,6 +80,27 @@ const LightningIcon = () => (
   <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
 );
 
+const ClockOutlineIcon = () => (
+  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="10"></circle>
+    <polyline points="12 6 12 12 16 14"></polyline>
+  </svg>
+);
+
+const CheckOutlineIcon = () => (
+  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+);
+
+const TargetIcon = () => (
+  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="10"></circle>
+    <circle cx="12" cy="12" r="6"></circle>
+    <circle cx="12" cy="12" r="2"></circle>
+  </svg>
+);
+
 // Logo SVG component
 const LogoSVG = () => (
   <svg className="w-9 h-9" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -105,6 +127,8 @@ interface TaskItem {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
+
   // --- STATE MANAGEMENT ---
   const [tasks, setTasks] = useState<TaskItem[]>([
     { id: 1, name: "Review PR #218 from Sara", duration: "15 min • 1 sprint", priority: "Medium", completed: false },
@@ -115,6 +139,7 @@ export default function DashboardPage() {
   const [isSprintActive, setIsSprintActive] = useState(false);
   const [sprintTimeRemaining, setSprintTimeRemaining] = useState(25 * 60);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showSummaryView, setShowSummaryView] = useState(false);
 
   // Goal progress based on completed tasks
   const baseCompletedSprints = 3;
@@ -123,9 +148,20 @@ export default function DashboardPage() {
   const currentCompletedSprints = Math.min(totalPlannedSprints, baseCompletedSprints + completedTasksCount);
   const progressRatio = currentCompletedSprints / totalPlannedSprints;
 
-  // SVG circular properties
+  // Auto transition to summary view if 100% sprints done (5/5)
+  useEffect(() => {
+    if (currentCompletedSprints >= totalPlannedSprints) {
+      setShowSummaryView(true);
+    }
+  }, [currentCompletedSprints]);
+
+  // SVG circular properties for active goals
   const circleCircumference = 314.16; // 2 * PI * 50 (Radius 50)
   const circleOffset = circleCircumference * (1 - progressRatio);
+
+  // SVG circular properties for recap banner
+  const ringCircumference = 282.74; // 2 * PI * 45 (Radius 45)
+  const ringOffset = ringCircumference * (1 - 1.0); // 100% complete for summary view
 
   // Task Completion handler
   const handleToggleTask = (id: number) => {
@@ -229,7 +265,7 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="min-h-screen flex bg-slate-50 text-slate-800 font-sans">
+    <div className="min-h-screen flex bg-slate-50 text-slate-800 font-sans relative">
       
       {/* --- DESKTOP SIDEBAR --- */}
       <aside className="w-[260px] bg-white border-r border-slate-200/60 p-6 flex flex-col justify-between shrink-0 hidden lg:flex">
@@ -296,312 +332,500 @@ export default function DashboardPage() {
             </button>
             
             <div>
-              <h1 className="font-heading font-extrabold text-lg md:text-xl text-slate-900 leading-tight">Good morning, Fahim 👋</h1>
-              <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 font-medium">Saturday, June 27 • You have {totalPlannedSprints} sprints planned today</p>
+              <h1 className="font-heading font-extrabold text-lg md:text-xl text-slate-900 leading-tight">
+                {showSummaryView ? "Daily Summary" : "Good morning, Fahim 👋"}
+              </h1>
+              <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 font-medium">
+                {showSummaryView 
+                  ? "Saturday, June 27 · End of day recap" 
+                  : `Saturday, June 27 • You have ${totalPlannedSprints} sprints planned today`}
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3 md:gap-4">
-            {/* Search */}
-            <div className="relative hidden md:block">
-              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <SearchIcon />
-              </span>
-              <input
-                type="text"
-                placeholder="Search tasks..."
-                className="w-[180px] xl:w-[240px] pl-10 pr-4 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#7c3aed] focus:bg-white focus:ring-2 focus:ring-purple-100 transition-all"
-              />
-            </div>
-
-            {/* Notification bell */}
-            <button className="w-10 h-10 bg-white border border-slate-200/60 rounded-xl flex items-center justify-center hover:bg-slate-50 transition-colors relative" aria-label="Notifications">
-              <BellIcon />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-            </button>
-
-            {/* Start Focus Button */}
+            
+            {/* Visual preview toggle button */}
             <button 
-              className={`btn btn-primary h-10 px-4 md:px-5 text-xs md:text-sm gap-2 font-bold ${isSprintActive ? "bg-red-500 hover:bg-red-600 shadow-red-500/10" : ""}`}
-              onClick={() => setIsSprintActive(!isSprintActive)}
+              className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                showSummaryView 
+                  ? "bg-purple-100 border-purple-200 text-[#7c3aed]" 
+                  : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+              }`}
+              onClick={() => setShowSummaryView(!showSummaryView)}
             >
-              <LightningIcon />
-              <span className="hidden sm:inline">{isSprintActive ? "Pause Focus" : "Start Focus"}</span>
-              <span className="sm:hidden">{isSprintActive ? "Pause" : "Focus"}</span>
+              {showSummaryView ? "👁 View Goals" : "🎉 View Recap"}
             </button>
+
+            {showSummaryView ? (
+              <button 
+                className="h-10 px-4 border border-slate-200 rounded-xl text-xs md:text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2 cursor-pointer bg-white"
+                onClick={() => alert("Daily recap shared successfully!")}
+              >
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                  <polyline points="16 6 12 2 8 6"></polyline>
+                  <line x1="12" y1="2" x2="12" y2="15"></line>
+                </svg>
+                <span className="hidden sm:inline">Share recap</span>
+                <span className="sm:hidden">Share</span>
+              </button>
+            ) : (
+              <>
+                {/* Search */}
+                <div className="relative hidden md:block">
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <SearchIcon />
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Search tasks..."
+                    className="w-[180px] xl:w-[240px] pl-10 pr-4 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#7c3aed] focus:bg-white focus:ring-2 focus:ring-purple-100 transition-all"
+                  />
+                </div>
+
+                {/* Notification bell */}
+                <button className="w-10 h-10 bg-white border border-slate-200/60 rounded-xl flex items-center justify-center hover:bg-slate-50 transition-colors relative" aria-label="Notifications">
+                  <BellIcon />
+                  <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                </button>
+
+                {/* Start Focus Button */}
+                <button 
+                  className={`btn btn-primary h-10 px-4 md:px-5 text-xs md:text-sm gap-2 font-bold ${isSprintActive ? "bg-red-500 hover:bg-red-600 shadow-red-500/10" : ""}`}
+                  onClick={() => setIsSprintActive(!isSprintActive)}
+                >
+                  <LightningIcon />
+                  <span className="hidden sm:inline">{isSprintActive ? "Pause Focus" : "Start Focus"}</span>
+                  <span className="sm:hidden">{isSprintActive ? "Pause" : "Focus"}</span>
+                </button>
+              </>
+            )}
           </div>
         </header>
 
         {/* Dashboard Grid Area */}
         <div className="p-6 md:p-8 space-y-6 max-w-[1400px] w-full mx-auto">
           
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            
-            {/* Left Grid Widgets */}
-            <div className="lg:col-span-8 space-y-6">
+          {showSummaryView ? (
+            /* ========================================================================= */
+            /* --- STATE B: DAILY SUMMARY END-OF-DAY RECAP STATE --- */
+            /* ========================================================================= */
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-fade-in">
               
-              {/* Today's Goal Card */}
-              <div className="bg-gradient-to-r from-[#7c3aed] to-[#6366f1] text-white rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden shadow-lg border border-purple-500/10">
-                <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
+              {/* Left Column widgets */}
+              <div className="lg:col-span-8 space-y-6">
                 
-                {/* Circle Progress SVG */}
-                <div className="relative w-28 h-28 shrink-0 flex items-center justify-center select-none">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
-                    <circle className="text-white/10" cx="60" cy="60" r="50" fill="transparent" stroke="currentColor" strokeWidth="8"></circle>
-                    <circle 
-                      className="text-white transition-all duration-500" 
-                      cx="60" 
-                      cy="60" 
-                      r="50" 
-                      fill="transparent" 
-                      stroke="currentColor" 
-                      strokeWidth="8"
-                      strokeDasharray={circleCircumference}
-                      strokeDashoffset={circleOffset}
-                      strokeLinecap="round"
-                    ></circle>
-                  </svg>
-                  <div className="absolute text-center">
-                    <div className="font-heading font-extrabold text-xl leading-none">{currentCompletedSprints}/{totalPlannedSprints}</div>
-                    <div className="text-[10px] uppercase font-bold tracking-wider opacity-85 mt-1">sprints</div>
-                  </div>
-                </div>
+                {/* 1. Day Complete Banner Card */}
+                <div className="bg-[#4f46e5] text-white rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-lg border border-purple-500/10">
+                  {/* Floating Tilted Confetti Highlights */}
+                  <div className="absolute top-8 left-[60%] w-2.5 h-5 bg-yellow-400 transform rotate-12 opacity-80 rounded-sm"></div>
+                  <div className="absolute top-20 left-[75%] w-2 h-3.5 bg-blue-300 transform -rotate-45 opacity-60 rounded-sm"></div>
+                  <div className="absolute bottom-12 left-[62%] w-3 h-3 bg-purple-300 rounded-full opacity-70"></div>
+                  <div className="absolute top-10 left-[68%] w-2.5 h-2.5 bg-green-400 transform rotate-45 opacity-75"></div>
+                  <div className="absolute bottom-16 left-[80%] w-2 h-5 bg-pink-400 transform rotate-12 opacity-85 rounded-sm"></div>
+                  <div className="absolute top-16 left-[82%] w-3 h-3 bg-[#818cf8] transform rotate-12 opacity-60"></div>
 
-                {/* Card copy */}
-                <div className="flex-1 text-center md:text-left space-y-3">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/80">Today's Goal</span>
-                  <h2 className="font-heading font-extrabold text-xl md:text-2xl leading-none">Finish 5 focus sprints</h2>
-                  <p className="text-xs md:text-sm text-white/80 leading-relaxed max-w-md">
-                    You're {Math.round(progressRatio * 100)}% there — 2h 5m of focused work logged. Keep the streak alive!
-                  </p>
-                  
-                  {/* Linear Progress Bar */}
-                  <div className="pt-2">
-                    <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-white rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(255,255,255,0.4)]"
-                        style={{ width: `${progressRatio * 100}%` }}
-                      ></div>
+                  <div className="space-y-4 md:max-w-[70%]">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 border border-white/20 rounded-full text-[10px] font-bold uppercase tracking-wider text-white">
+                      🏆 Goal achieved · 100%
+                    </span>
+                    <h2 className="font-heading font-extrabold text-xl md:text-2xl leading-tight">
+                      Day complete. Brilliant work! 🎉
+                    </h2>
+                    <p className="text-xs md:text-sm text-white/80 leading-relaxed font-medium">
+                      You finished all 5 sprints and logged 2h 5m of deep focus. Your streak is now 8 days strong.
+                    </p>
+                    
+                    <div className="flex flex-wrap gap-2.5 pt-2">
+                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white/10 border border-white/10 rounded-full text-xs font-bold text-white select-none">
+                        ⚡ +320 XP
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white/10 border border-white/10 rounded-full text-xs font-bold text-white select-none">
+                        🪙 +45 coins
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white/10 border border-white/10 rounded-full text-xs font-bold text-white select-none">
+                        🔥 Streak +1
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Fully completed progress ring */}
+                  <div className="relative w-32 h-32 shrink-0 flex items-center justify-center select-none bg-white/5 rounded-full p-2 border border-white/5">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      <circle className="text-white/10" cx="50" cy="50" r="45" fill="transparent" stroke="currentColor" strokeWidth="6"></circle>
+                      <circle 
+                        className="text-white" 
+                        cx="50" 
+                        cy="50" 
+                        r="45" 
+                        fill="transparent" 
+                        stroke="currentColor" 
+                        strokeWidth="6.5"
+                        strokeDasharray={ringCircumference}
+                        strokeDashoffset={ringOffset}
+                        strokeLinecap="round"
+                      ></circle>
+                    </svg>
+                    <div className="absolute text-center text-white">
+                      <div className="font-heading font-extrabold text-2xl">5/5</div>
+                      <div className="text-[8px] uppercase font-bold tracking-widest text-white/60 mt-0.5">sprints</div>
                     </div>
                   </div>
                 </div>
+
+                {/* 2. Stats cards row */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  
+                  {/* Focus Time */}
+                  <div className="bg-white border border-slate-200/50 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
+                      <ClockOutlineIcon />
+                    </div>
+                    <h3 className="font-heading font-extrabold text-xl text-slate-900 leading-none">2h 05m</h3>
+                    <p className="text-xs text-slate-400 mt-1.5 font-medium">Focus time</p>
+                  </div>
+
+                  {/* Sprints Done */}
+                  <div className="bg-white border border-slate-200/50 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="w-9 h-9 rounded-xl bg-purple-50 text-[#7c3aed] flex items-center justify-center mb-4">
+                      <LightningIcon />
+                    </div>
+                    <h3 className="font-heading font-extrabold text-xl text-slate-900 leading-none">5 / 5</h3>
+                    <p className="text-xs text-slate-400 mt-1.5 font-medium">Sprints done</p>
+                  </div>
+
+                  {/* Tasks Completed */}
+                  <div className="bg-white border border-slate-200/50 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="w-9 h-9 rounded-xl bg-green-50 text-green-600 flex items-center justify-center mb-4">
+                      <CheckOutlineIcon />
+                    </div>
+                    <h3 className="font-heading font-extrabold text-xl text-slate-900 leading-none">6</h3>
+                    <p className="text-xs text-slate-400 mt-1.5 font-medium">Tasks completed</p>
+                  </div>
+
+                  {/* Avg Productivity */}
+                  <div className="bg-white border border-slate-200/50 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center mb-4">
+                      <TargetIcon />
+                    </div>
+                    <h3 className="font-heading font-extrabold text-xl text-slate-900 leading-none">87%</h3>
+                    <p className="text-xs text-slate-400 mt-1.5 font-medium">Productivity</p>
+                  </div>
+
+                </div>
+
+                {/* 3. Completed Sprints Cards */}
+                <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-6">
+                  <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                    <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider">Completed sprints</h3>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-green-50 border border-green-200/30 text-green-600 text-xs font-bold">
+                      ✓ 5 done
+                    </span>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* Item 1 */}
+                    <div className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl hover:bg-slate-50/50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                          ✓
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-sm text-slate-800 leading-tight">OAuth providers & routes</h4>
+                          <p className="text-[10px] text-slate-400 mt-1">9:00 AM · 25 min</p>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-purple-50 text-[#7c3aed] text-xs font-bold">
+                        ⚡ +40 XP
+                      </span>
+                    </div>
+
+                    {/* Item 2 */}
+                    <div className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl hover:bg-slate-50/50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                          ✓
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-sm text-slate-800 leading-tight">Debug dashboard slow-load</h4>
+                          <p className="text-[10px] text-slate-400 mt-1">9:30 AM · 30 min</p>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-purple-50 text-[#7c3aed] text-xs font-bold">
+                        ⚡ +45 XP
+                      </span>
+                    </div>
+
+                    {/* Item 3 */}
+                    <div className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl hover:bg-slate-50/50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                          ✓
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-sm text-slate-800 leading-tight">Q3 product update email</h4>
+                          <p className="text-[10px] text-slate-400 mt-1">10:05 AM · 20 min</p>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-purple-50 text-[#7c3aed] text-xs font-bold">
+                        ⚡ +35 XP
+                      </span>
+                    </div>
+
+                    {/* Item 4 */}
+                    <div className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl hover:bg-slate-50/50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                          ✓
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-sm text-slate-800 leading-tight">Review Sara's PR #218</h4>
+                          <p className="text-[10px] text-slate-400 mt-1">10:30 AM · 15 min</p>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-purple-50 text-[#7c3aed] text-xs font-bold">
+                        ⚡ +30 XP
+                      </span>
+                    </div>
+
+                    {/* Item 5 */}
+                    <div className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl hover:bg-slate-50/50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                          ✓
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-sm text-slate-800 leading-tight">Onboarding empty states</h4>
+                          <p className="text-[10px] text-slate-400 mt-1">11:00 AM · 25 min</p>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-purple-50 text-[#7c3aed] text-xs font-bold">
+                        ⚡ +40 XP
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
               </div>
 
-              {/* Stats Row */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {/* XP */}
-                <div className="bg-white border border-slate-200/50 rounded-2xl p-5 hover:shadow-md transition-shadow">
-                  <div className="w-9 h-9 rounded-xl bg-purple-50 text-[#7c3aed] flex items-center justify-center mb-4">
-                    <LightningIcon />
-                  </div>
-                  <h3 className="font-heading font-extrabold text-2xl text-slate-900 leading-none">2,480</h3>
-                  <p className="text-xs text-slate-400 mt-1.5 font-medium">Total XP</p>
-                </div>
-
-                {/* Focus Time */}
-                <div className="bg-white border border-slate-200/50 rounded-2xl p-5 hover:shadow-md transition-shadow">
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#0284c7] flex items-center justify-center mb-4">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                  </div>
-                  <h3 className="font-heading font-extrabold text-2xl text-slate-900 leading-none">4h 25m</h3>
-                  <p className="text-xs text-slate-400 mt-1.5 font-medium">Focus Time</p>
-                </div>
-
-                {/* Coins */}
-                <div className="bg-white border border-slate-200/50 rounded-2xl p-5 hover:shadow-md transition-shadow">
-                  <div className="w-9 h-9 rounded-xl bg-orange-50 text-[#ea580c] flex items-center justify-center mb-4">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                  </div>
-                  <h3 className="font-heading font-extrabold text-2xl text-slate-900 leading-none">340</h3>
-                  <p className="text-xs text-slate-400 mt-1.5 font-medium">Coins</p>
-                </div>
-
-                {/* Productivity */}
-                <div className="bg-white border border-slate-200/50 rounded-2xl p-5 hover:shadow-md transition-shadow">
-                  <div className="w-9 h-9 rounded-xl bg-green-50 text-[#16a34a] flex items-center justify-center mb-4">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
-                  </div>
-                  <h3 className="font-heading font-extrabold text-2xl text-slate-900 leading-none">87%</h3>
-                  <p className="text-xs text-slate-400 mt-1.5 font-medium">Productivity</p>
-                </div>
-              </div>
-
-              {/* Current Sprint */}
-              <div className="bg-white border border-slate-200/50 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider">Current Sprint</h3>
-                  <a href="#" className="text-xs text-[#7c3aed] font-semibold hover:text-[#6d28d9] transition-colors">View plan ➔</a>
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-purple-100 text-[#7c3aed] flex items-center justify-center shadow-sm">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              {/* Right Column widgets */}
+              <div className="lg:col-span-4 space-y-6">
+                
+                {/* Level Card */}
+                <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-full bg-[#7c3aed] text-white font-heading font-extrabold flex items-center justify-center select-none shadow-sm">
+                      12
                     </div>
                     <div>
-                      <h4 className="font-semibold text-sm text-slate-900 leading-tight">
-                        {isSprintActive ? `Ticking: ${formatTimer(sprintTimeRemaining)}` : "Sprint 4 • Implement auth flow"}
-                      </h4>
-                      <p className="text-xs text-slate-400 mt-1 flex items-center gap-2">
-                        <span>⏱ 25 min</span>
-                        <span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>
-                        <span className="text-red-500 font-semibold uppercase tracking-wider text-[10px]">High priority</span>
-                      </p>
+                      <h4 className="font-bold text-xs md:text-sm text-slate-900 leading-tight">Level 12</h4>
+                      <p className="text-[10px] text-green-500 font-bold mt-0.5">+320 XP earned today</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-[#7c3aed] rounded-full transition-all duration-500" style={{ width: "80%" }}></div>
+                    </div>
+                    <div className="flex justify-between text-[9px] text-slate-400 font-bold">
+                      <span>2,480 XP</span>
+                      <span>520 to Lvl 13</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tomorrow's Preview Card */}
+                <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-5">
+                  <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider">Tomorrow's preview</h3>
+                  
+                  <div className="bg-slate-50 border border-slate-200/40 rounded-xl p-4 flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-lg bg-purple-50 text-[#7c3aed] flex items-center justify-center shrink-0 text-xs">
+                      📅
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-xs md:text-sm text-slate-800 leading-tight">4 sprints queued</h4>
+                      <p className="text-[10px] text-slate-400 mt-1 leading-normal font-semibold">Starts 9:00 AM · ~1h 40m focus</p>
                     </div>
                   </div>
 
                   <button 
-                    className={`btn btn-primary h-10 px-6 text-xs font-bold gap-2 w-full sm:w-auto shadow-sm ${isSprintActive ? "bg-red-500 hover:bg-red-600 shadow-red-500/10" : ""}`}
-                    onClick={() => setIsSprintActive(!isSprintActive)}
+                    className="w-full btn btn-primary h-11 text-xs md:text-sm font-bold shadow-sm"
+                    onClick={() => {
+                      alert("Tomorrow's focus backlog imported!");
+                      router.push("/tasks");
+                    }}
                   >
-                    {isSprintActive ? (
-                      <>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"></rect></svg>
-                        Pause
-                      </>
-                    ) : (
-                      <>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,4 20,12 6,20"></polygon></svg>
-                        Start
-                      </>
-                    )}
+                    Plan tomorrow ➔
                   </button>
                 </div>
-              </div>
 
-              {/* Upcoming Tasks */}
-              <div className="bg-white border border-slate-200/50 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider">Upcoming Tasks</h3>
-                  <a href="#" className="text-xs text-[#7c3aed] font-semibold hover:text-[#6d28d9] transition-colors">See all ➔</a>
-                </div>
-
-                <div className="divide-y divide-slate-100">
-                  {tasks.map(task => (
-                    <div key={task.id} className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
-                      <div className="flex items-center gap-4">
-                        <input
-                          type="checkbox"
-                          className="w-5 h-5 rounded text-[#7c3aed] border-slate-300 focus:ring-[#7c3aed] cursor-pointer"
-                          checked={task.completed}
-                          onChange={() => handleToggleTask(task.id)}
-                        />
-                        <div>
-                          <p className={`text-sm font-semibold leading-tight transition-all duration-300 ${task.completed ? "line-through text-slate-400" : "text-slate-900"}`}>
-                            {task.name}
-                          </p>
-                          <p className="text-[11px] text-slate-400 mt-1">{task.duration}</p>
-                        </div>
-                      </div>
-
-                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
-                        task.priority === "High" ? "bg-red-50 border-red-200 text-red-500" : 
-                        task.priority === "Medium" ? "bg-orange-50 border-orange-200 text-orange-500" : 
-                        "bg-green-50 border-green-200 text-green-500"
-                      }`}>
-                        {task.priority}
-                      </span>
-                    </div>
-                  ))}
-                </div>
               </div>
 
             </div>
-
-            {/* Right Sidebar Widgets */}
-            <div className="lg:col-span-4 space-y-6">
+          ) : (
+            /* ========================================================================= */
+            /* --- STATE A: ORIGINAL ACTIVE SPRINT/TASKS STATE --- */
+            /* ========================================================================= */
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               
-              {/* Level Card */}
-              <div className="bg-[#5c28e2] rounded-3xl p-6 text-white relative overflow-hidden shadow-lg border border-purple-600/10">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 bg-white text-[#5c28e2] font-heading font-extrabold text-xl rounded-full flex items-center justify-center shadow-md">
-                    12
+              {/* Left Grid Widgets */}
+              <div className="lg:col-span-8 space-y-6">
+                
+                {/* Today's Goal Card */}
+                <div className="bg-gradient-to-r from-[#7c3aed] to-[#6366f1] text-white rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden shadow-lg border border-purple-500/10">
+                  <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
+                  
+                  {/* Circle Progress SVG */}
+                  <div className="relative w-28 h-28 shrink-0 flex items-center justify-center select-none bg-white/5 rounded-full p-2 border border-white/5">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
+                      <circle className="text-white/10" cx="60" cy="60" r="50" fill="transparent" stroke="currentColor" strokeWidth="8"></circle>
+                      <circle 
+                        className="text-white transition-all duration-500" 
+                        cx="60" 
+                        cy="60" 
+                        r="50" 
+                        fill="transparent" 
+                        stroke="currentColor" 
+                        strokeWidth="8.5"
+                        strokeDasharray={circleCircumference}
+                        strokeDashoffset={circleOffset}
+                        strokeLinecap="round"
+                      ></circle>
+                    </svg>
+                    <div className="absolute text-center">
+                      <div className="font-heading font-extrabold text-xl">{Math.round(progressRatio * 100)}%</div>
+                      <div className="text-[7px] uppercase font-bold tracking-widest text-white/70 mt-0.5">completed</div>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-heading font-bold text-base leading-tight">Level 12 • Focus Architect</h3>
-                    <p className="text-xs text-white/70 mt-0.5">520 XP to Level 13</p>
+
+                  <div className="space-y-3 flex-1 text-center md:text-left">
+                    <h2 className="font-heading font-extrabold text-lg md:text-xl leading-tight">Today's Focus Goal</h2>
+                    <p className="text-xs text-white/80 leading-relaxed max-w-md font-medium">
+                      Complete {totalPlannedSprints} sprints to hit 100%. Checking off upcoming tasks reactively boosts your progress metrics.
+                    </p>
+                    
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex justify-between text-[10px] text-white/60 font-bold uppercase tracking-wider">
+                        <span>Daily Progress</span>
+                        <span>{currentCompletedSprints} / {totalPlannedSprints} Sprints</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
+                        <div className="h-full bg-white rounded-full transition-all duration-500" style={{ width: `${progressRatio * 100}%` }}></div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <div className="w-full h-2 bg-white/15 rounded-full overflow-hidden">
-                    <div className="h-full bg-white rounded-full" style={{ width: "80%" }}></div>
-                  </div>
-                  <div className="flex justify-between text-[10px] text-white/50 pt-1">
-                    <span>2,480 XP</span>
-                    <span>3,000 XP</span>
+                {/* Sprints checklist Widget */}
+                <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-6">
+                  <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-3">Upcoming Tasks</h3>
+                  
+                  <div className="space-y-3.5">
+                    {tasks.map(task => (
+                      <div key={task.id} className="flex items-center justify-between p-1">
+                        <label className="flex items-center gap-3.5 cursor-pointer text-xs md:text-sm font-medium">
+                          <input 
+                            type="checkbox" 
+                            className="w-4.5 h-4.5 rounded text-[#7c3aed] border-slate-300 focus:ring-[#7c3aed] transition-colors"
+                            checked={task.completed}
+                            onChange={() => handleToggleTask(task.id)}
+                          />
+                          <span className={`text-slate-700 select-none font-semibold transition-all ${task.completed ? "line-through text-slate-400" : ""}`}>
+                            {task.name}
+                          </span>
+                        </label>
+
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] md:text-xs text-slate-400 font-medium">{task.duration}</span>
+                          <span className={`px-2.5 py-0.5 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-wider ${
+                            task.priority === "High" ? "bg-red-50 text-red-500 border border-red-100/40" :
+                            task.priority === "Medium" ? "bg-orange-50 text-orange-500 border border-orange-100/40" :
+                            "bg-green-50 text-green-500 border border-green-100/40"
+                          }`}>
+                            {task.priority}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
+
               </div>
 
-              {/* Streak Widget */}
-              <div className="bg-white border border-slate-200/50 rounded-2xl p-6">
-                <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider mb-4">Streak</h3>
+              {/* Right Grid Widgets */}
+              <div className="lg:col-span-4 space-y-6">
                 
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="w-12 h-12 bg-orange-50 text-[#ea580c] text-2xl rounded-2xl flex items-center justify-center">
-                    🔥
+                {/* Sprint Timer Widget */}
+                <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider">Current Sprint</h3>
+                    <span className={`w-2.5 h-2.5 rounded-full ${isSprintActive ? "bg-red-500 animate-ping" : "bg-slate-300"}`}></span>
                   </div>
-                  <div>
-                    <h4 className="font-heading font-extrabold text-xl text-slate-900 leading-tight">7 days</h4>
-                    <p className="text-[11px] text-slate-400 mt-0.5 font-medium">Longest streak: 14 days</p>
+
+                  <div className="bg-slate-50/50 border border-slate-200/50 rounded-2xl p-5 text-center space-y-3">
+                    <h4 className="font-bold text-xs md:text-sm text-slate-800 leading-tight">OAuth Provider Integrations</h4>
+                    <p className="font-mono font-bold text-3xl md:text-4xl text-[#7c3aed] leading-none py-2 tracking-tight">
+                      {isSprintActive ? `Ticking: ${formatTimer(sprintTimeRemaining)}` : "25:00"}
+                    </p>
+                    
+                    <button 
+                      className={`w-full btn h-11 text-xs md:text-sm font-extrabold gap-2 border transition-all ${
+                        isSprintActive 
+                          ? "bg-red-50 border-red-200 text-red-600 hover:bg-red-100/60" 
+                          : "bg-purple-600 border-purple-600 text-white hover:bg-purple-700 shadow-md shadow-purple-500/10"
+                      }`}
+                      onClick={() => setIsSprintActive(!isSprintActive)}
+                    >
+                      {isSprintActive ? "Pause Sprint" : "Start Sprint"}
+                    </button>
                   </div>
                 </div>
 
-                {/* Weekday check bubbles */}
-                <div className="grid grid-cols-7 gap-2">
-                  {["M", "T", "W", "T", "F", "S", "S"].map((day, idx) => {
-                    const isChecked = idx < 6;
-                    return (
+                {/* Level Up widget */}
+                <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-full bg-[#7c3aed] text-white font-heading font-extrabold flex items-center justify-center select-none shadow-sm">
+                      12
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xs md:text-sm text-slate-900 leading-tight">Level 12</h4>
+                      <p className="text-[10px] text-slate-400 mt-0.5">520 XP until Level 13</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-[#7c3aed] rounded-full" style={{ width: "80%" }}></div>
+                    </div>
+                    <div className="flex justify-between text-[9px] text-slate-400 font-bold">
+                      <span>2,480 XP</span>
+                      <span>3,000 XP</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Streak widget */}
+                <div className="bg-white border border-slate-200/50 rounded-2xl p-6">
+                  <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider mb-4">7-day streak 🔥</h3>
+                  <div className="grid grid-cols-6 gap-2">
+                    {["M", "T", "W", "T", "F", "S"].map((day, idx) => (
                       <div key={idx} className="flex flex-col items-center gap-2">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${
-                          isChecked ? "bg-[#7c3aed] text-white shadow-sm shadow-purple-500/10" : "bg-slate-100 text-slate-400 border border-slate-200/40"
+                          idx < 5 ? "bg-[#7c3aed] text-white shadow-sm" : "bg-slate-100 text-slate-400 border border-slate-200/40"
                         }`}>
-                          {isChecked ? "✓" : ""}
+                          {idx < 5 ? "✓" : ""}
                         </div>
                         <span className="text-[10px] font-bold text-slate-400">{day}</span>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Weekly Focus */}
-              <div className="bg-white border border-slate-200/50 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider">Weekly Focus</h3>
-                  <a href="#" className="text-xs text-[#7c3aed] font-semibold hover:text-[#6d28d9] transition-colors">Details ➔</a>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Bar chart mockup */}
-                <div className="flex items-end justify-between h-36 px-2">
-                  {[
-                    { day: "M", val: 24 },
-                    { day: "T", val: 48 },
-                    { day: "W", val: 36 },
-                    { day: "T", val: 80, active: true },
-                    { day: "F", val: 62 },
-                    { day: "S", val: 18 },
-                    { day: "S", val: 56 }
-                  ].map((bar, idx) => (
-                    <div key={idx} className="flex flex-col items-center gap-2 flex-1">
-                      <div className="w-full flex justify-center h-28 items-end px-1.5">
-                        <div 
-                          className={`w-full rounded-md transition-all duration-500 ${
-                            bar.active ? "bg-[#7c3aed] shadow-lg shadow-purple-500/20" : "bg-purple-100"
-                          }`}
-                          style={{ height: `${bar.val}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-[10px] font-bold text-slate-400">{bar.day}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
 
             </div>
-
-          </div>
+          )}
 
         </div>
 
