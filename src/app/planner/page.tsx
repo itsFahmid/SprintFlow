@@ -111,18 +111,34 @@ export default function PlannerPage() {
   const router = useRouter();
 
   // --- STATE ---
+  const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState("Fahim Siddique");
   const [completedSprints, setCompletedSprints] = useState(1);
+  const [totalPlannedSprints, setTotalPlannedSprints] = useState(5);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Sync with localStorage to see focus progression
+  // Fetch me on mount
   useEffect(() => {
-    const saved = localStorage.getItem("sprintflow_completed_sprints");
-    if (saved) {
-      setCompletedSprints(parseInt(saved, 10));
-    }
+    const initPlanner = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) {
+          router.push("/login");
+          return;
+        }
+        const data = await res.json();
+        setUserName(data.user.name);
+        setCompletedSprints(data.user.planner.completedSprintsCount || 0);
+        setTotalPlannedSprints(data.user.settings.dailyGoal || 5);
+        setLoading(false);
+      } catch (err) {
+        console.error("Planner load error:", err);
+        router.push("/login");
+      }
+    };
+    initPlanner();
   }, []);
 
-  const totalPlannedSprints = 5;
   const progressRatio = completedSprints / totalPlannedSprints;
 
   // SVG Circular Stats Ring
@@ -130,7 +146,6 @@ export default function PlannerPage() {
   const ringOffset = ringCircumference * (1 - progressRatio);
 
   const handleStartDay = () => {
-    // Redirects directly to focus timer route
     router.push("/sprints");
   };
 
@@ -193,11 +208,11 @@ export default function PlannerPage() {
       {/* Profile Footer */}
       <div className="flex items-center justify-between border-t border-slate-100 pt-5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#e0e7ff] text-[#4f46e5] font-bold flex items-center justify-center text-sm border border-indigo-100">
-            FS
+          <div className="w-10 h-10 rounded-full bg-[#e0e7ff] text-[#4f46e5] font-bold flex items-center justify-center text-xs border border-indigo-100 uppercase select-none">
+            {userName.split(" ").map(n => n[0]).join("")}
           </div>
           <div>
-            <h5 className="font-semibold text-sm text-slate-900 leading-tight">Fahim Siddique</h5>
+            <h5 className="font-semibold text-sm text-slate-900 leading-tight">{userName}</h5>
             <p className="text-[11px] text-slate-400 mt-0.5">Level 12 • Pro</p>
           </div>
         </div>
@@ -205,6 +220,18 @@ export default function PlannerPage() {
       </div>
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center font-sans">
+        <div className="relative w-16 h-16 flex items-center justify-center select-none">
+          <div className="absolute inset-0 bg-[#7c3aed]/5 backdrop-blur-md rounded-full border border-[#7c3aed]/10 animate-pulse"></div>
+          <div className="w-12 h-12 border-4 border-[#7c3aed]/20 border-t-[#7c3aed] rounded-full animate-spin"></div>
+        </div>
+        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-4 animate-pulse">Loading workspace...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex bg-slate-50 text-slate-800 font-sans">

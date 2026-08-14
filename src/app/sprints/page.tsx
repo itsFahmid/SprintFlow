@@ -57,29 +57,62 @@ export default function SprintsPage() {
   const router = useRouter();
 
   // --- STATES ---
-  const [sprintState, setSprintState] = useState<"focus" | "break">("focus");
+  const [loading, setLoading] = useState(true);
   const [completedCount, setCompletedCount] = useState(1);
+  const [sprintState, setSprintState] = useState<"focus" | "break">("focus");
   
   // Timer countdowns
-  const [focusTime, setFocusTime] = useState(18 * 60 + 24); // Start at mock 18:24
-  const [breakTime, setBreakTime] = useState(4 * 60 + 32); // Start at mock 4:32
+  const [focusTime, setFocusTime] = useState(25 * 60);
+  const [breakTime, setBreakTime] = useState(5 * 60);
+  const [focusMaxSecs, setFocusMaxSecs] = useState(25 * 60);
+  const [breakMaxSecs, setBreakMaxSecs] = useState(5 * 60);
   const [isTimerRunning, setIsTimerRunning] = useState(true);
 
-  // Sync state with localStorage completed sprints
+  // Score states
+  const [xp, setXp] = useState(2480);
+  const [coins, setCoins] = useState(240);
+  const [rewardsHistory, setRewardsHistory] = useState<any[]>([]);
+
+  // Fetch metrics on mount
   useEffect(() => {
-    const saved = localStorage.getItem("sprintflow_completed_sprints");
-    if (saved) {
-      setCompletedCount(parseInt(saved, 10));
-    } else {
-      localStorage.setItem("sprintflow_completed_sprints", "1");
-    }
+    const initSprints = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) {
+          router.push("/login");
+          return;
+        }
+        const data = await res.json();
+        
+        const sprintCount = data.user.planner.completedSprintsCount || 0;
+        setCompletedCount(sprintCount);
+        localStorage.setItem("sprintflow_completed_sprints", sprintCount.toString());
+
+        const fLength = (data.user.settings.sprintLength || 25) * 60;
+        const bLength = (data.user.settings.breakLength || 5) * 60;
+        setFocusTime(fLength);
+        setFocusMaxSecs(fLength);
+        setBreakTime(bLength);
+        setBreakMaxSecs(bLength);
+
+        setXp(data.user.rewards.xp);
+        setCoins(data.user.rewards.coins);
+        setRewardsHistory(data.user.rewards.history || []);
+
+        setLoading(false);
+      } catch (err) {
+        console.error("Sprint clock init error:", err);
+        router.push("/login");
+      }
+    };
+    initSprints();
   }, []);
 
   // Timer Tick Side Effects
   useEffect(() => {
     let timerInterval: NodeJS.Timeout | null = null;
     
-    if (isTimerRunning) {
+    if (isTimerRunning && !loading) {
       timerInterval = setInterval(() => {
         if (sprintState === "focus") {
           setFocusTime(prev => {
@@ -104,7 +137,7 @@ export default function SprintsPage() {
     return () => {
       if (timerInterval) clearInterval(timerInterval);
     };
-  }, [isTimerRunning, sprintState]);
+  }, [isTimerRunning, sprintState, loading]);
 
   // Actions
   const handleToggleTimer = () => {
@@ -113,25 +146,61 @@ export default function SprintsPage() {
 
   const handleSkipSprint = () => {
     setSprintState("break");
-    setBreakTime(5 * 60);
     setIsTimerRunning(true);
   };
 
-  const handleFocusComplete = () => {
-    // Increment completed count in localStorage and state
+  const reportSprintCompletion = async (nextCompleted: number) => {
+    try {
+      await fetch("/api/planner", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planner: { completedSprintsCount: nextCompleted } })
+      });
+
+      const updatedXp = xp + 40;
+      const updatedCoins = coins + 10;
+      const newHistoryLog = {
+        id: "h-" + Math.random().toString(36).substring(2, 9),
+        text: `Sprint ${nextCompleted} completed focus block`,
+        xp: 40,
+        coins: 10,
+        timestamp: new Date().toISOString()
+      };
+      const updatedHistory = [newHistoryLog, ...rewardsHistory];
+
+      setXp(updatedXp);
+      setCoins(updatedCoins);
+      setRewardsHistory(updatedHistory);
+
+      await fetch("/api/rewards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rewards: {
+            xp: updatedXp,
+            coins: updatedCoins,
+            history: updatedHistory
+          }
+        })
+      });
+    } catch (err) {
+      console.error("Sprint completion reporting failed:", err);
+    }
+  };
+
+  const handleFocusComplete = async () => {
     const nextCompleted = completedCount + 1;
     setCompletedCount(nextCompleted);
     localStorage.setItem("sprintflow_completed_sprints", nextCompleted.toString());
     
-    // Switch to break state
     setSprintState("break");
-    setBreakTime(5 * 60);
     setIsTimerRunning(true);
+
+    await reportSprintCompletion(nextCompleted);
   };
 
   const handleResumeFocus = () => {
     setSprintState("focus");
-    setFocusTime(25 * 60);
     setIsTimerRunning(true);
   };
 
@@ -147,13 +216,23 @@ export default function SprintsPage() {
   };
 
   // SVG Circumferences
-  const focusMaxSecs = 25 * 60;
   const focusCircumference = 565.48; // 2 * PI * 90 (Radius 90)
-  const focusOffset = focusCircumference * (1 - (focusTime / focusMaxSecs));
+  const focusOffset = focusCircumference * (1 - (focusTime / (focusMaxSecs || 1)));
 
-  const breakMaxSecs = 5 * 60;
   const breakCircumference = 565.48;
-  const breakOffset = breakCircumference * (1 - (breakTime / breakMaxSecs));
+  const breakOffset = breakCircumference * (1 - (breakTime / (breakMaxSecs || 1)));
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#120024] flex flex-col items-center justify-center font-sans text-white">
+        <div className="relative w-16 h-16 flex items-center justify-center select-none">
+          <div className="absolute inset-0 bg-[#7c3aed]/5 backdrop-blur-md rounded-full border border-[#7c3aed]/10 animate-pulse"></div>
+          <div className="w-12 h-12 border-4 border-[#7c3aed]/20 border-t-[#7c3aed] rounded-full animate-spin"></div>
+        </div>
+        <p className="text-xs text-purple-400 font-bold uppercase tracking-widest mt-4 animate-pulse">Entering focus zone...</p>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen w-full flex flex-col justify-between transition-colors duration-500 overflow-x-hidden ${

@@ -31,12 +31,30 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submit Signup", { name, email, password });
-    // Handle mock registration transition
-    router.push("/onboarding");
+    setError(null);
+
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Signup failed");
+        return;
+      }
+
+      router.push("/onboarding");
+    } catch (err) {
+      console.error(err);
+      setError("An unexpected error occurred. Please try again.");
+    }
   };
 
   return (
@@ -97,6 +115,12 @@ export default function SignupPage() {
             <h2 className="font-heading font-extrabold text-2xl text-slate-900 mb-2">Create your account</h2>
             <p className="text-sm text-slate-500">Start turning tasks into focused sprints.</p>
           </div>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-xs font-semibold leading-relaxed">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Full Name Field */}

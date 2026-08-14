@@ -130,6 +130,16 @@ export default function DashboardPage() {
   const router = useRouter();
 
   // --- STATE MANAGEMENT ---
+  const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState("Fahim Siddique");
+  const [userEmail, setUserEmail] = useState("fahim@sprintflow.io");
+  const [xp, setXp] = useState(2480);
+  const [coins, setCoins] = useState(240);
+  const [streak, setStreak] = useState(5);
+  const [streakDays, setStreakDays] = useState<boolean[]>([true, true, true, true, true, false]);
+  const [completedSprintsCount, setCompletedSprintsCount] = useState(1);
+  const [totalPlannedSprints, setTotalPlannedSprints] = useState(5);
+
   const [tasks, setTasks] = useState<TaskItem[]>([
     { id: 1, name: "Review PR #218 from Sara", duration: "15 min • 1 sprint", priority: "Medium", completed: false },
     { id: 2, name: "Write sprint retro notes", duration: "20 min • 1 sprint", priority: "Low", completed: false },
@@ -141,19 +151,46 @@ export default function DashboardPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSummaryView, setShowSummaryView] = useState(false);
 
+  // Fetch me on mount
+  useEffect(() => {
+    const fetchMe = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) {
+          router.push("/login");
+          return;
+        }
+        const data = await res.json();
+        setUserName(data.user.name);
+        setUserEmail(data.user.email);
+        setTasks(data.user.tasks || []);
+        setXp(data.user.rewards.xp);
+        setCoins(data.user.rewards.coins);
+        setStreak(data.user.rewards.streak);
+        setStreakDays(data.user.rewards.streakDays || [true, true, true, true, true, false]);
+        setCompletedSprintsCount(data.user.planner.completedSprintsCount);
+        setTotalPlannedSprints(data.user.settings.dailyGoal || 5);
+        setLoading(false);
+      } catch (err) {
+        console.error("Fetch me error:", err);
+        router.push("/login");
+      }
+    };
+    fetchMe();
+  }, []);
+
   // Goal progress based on completed tasks
-  const baseCompletedSprints = 3;
-  const totalPlannedSprints = 5;
+  const baseCompletedSprints = Math.max(0, totalPlannedSprints - 2);
   const completedTasksCount = tasks.filter(t => t.completed).length;
   const currentCompletedSprints = Math.min(totalPlannedSprints, baseCompletedSprints + completedTasksCount);
   const progressRatio = currentCompletedSprints / totalPlannedSprints;
 
   // Auto transition to summary view if 100% sprints done (5/5)
   useEffect(() => {
-    if (currentCompletedSprints >= totalPlannedSprints) {
+    if (currentCompletedSprints >= totalPlannedSprints && !loading) {
       setShowSummaryView(true);
     }
-  }, [currentCompletedSprints]);
+  }, [currentCompletedSprints, loading, totalPlannedSprints]);
 
   // SVG circular properties for active goals
   const circleCircumference = 314.16; // 2 * PI * 50 (Radius 50)
@@ -164,8 +201,19 @@ export default function DashboardPage() {
   const ringOffset = ringCircumference * (1 - 1.0); // 100% complete for summary view
 
   // Task Completion handler
-  const handleToggleTask = (id: number) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+  const handleToggleTask = async (id: number) => {
+    const updatedTasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+    setTasks(updatedTasks);
+
+    try {
+      await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tasks: updatedTasks })
+      });
+    } catch (err) {
+      console.error("Save tasks error:", err);
+    }
   };
 
   // Timer Effect
@@ -190,6 +238,19 @@ export default function DashboardPage() {
     const secs = timeInSecs % 60;
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
+
+  // Render Loader if active
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center font-sans">
+        <div className="relative w-16 h-16 flex items-center justify-center select-none">
+          <div className="absolute inset-0 bg-[#7c3aed]/5 backdrop-blur-md rounded-full border border-[#7c3aed]/10 animate-pulse"></div>
+          <div className="w-12 h-12 border-4 border-[#7c3aed]/20 border-t-[#7c3aed] rounded-full animate-spin"></div>
+        </div>
+        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-4 animate-pulse">Loading workspace...</p>
+      </div>
+    );
+  }
 
   // Navigation menu shared JSX
   const navigationLinks = (
@@ -251,11 +312,11 @@ export default function DashboardPage() {
       {/* User Profile */}
       <div className="flex items-center justify-between border-t border-slate-100 pt-5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#e0e7ff] text-[#4f46e5] font-bold flex items-center justify-center text-sm border border-indigo-100">
-            FS
+          <div className="w-10 h-10 rounded-full bg-[#e0e7ff] text-[#4f46e5] font-bold flex items-center justify-center text-xs border border-indigo-100 uppercase select-none">
+            {userName.split(" ").map(n => n[0]).join("")}
           </div>
           <div>
-            <h5 className="font-semibold text-sm text-slate-900 leading-tight">Fahim Siddique</h5>
+            <h5 className="font-semibold text-sm text-slate-900 leading-tight">{userName}</h5>
             <p className="text-[11px] text-slate-400 mt-0.5">Level 12 • Pro</p>
           </div>
         </div>
@@ -333,7 +394,7 @@ export default function DashboardPage() {
             
             <div>
               <h1 className="font-heading font-extrabold text-lg md:text-xl text-slate-900 leading-tight">
-                {showSummaryView ? "Daily Summary" : "Good morning, Fahim 👋"}
+                {showSummaryView ? "Daily Summary" : `Good morning, ${userName.split(" ")[0]} 👋`}
               </h1>
               <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 font-medium">
                 {showSummaryView 
@@ -790,16 +851,16 @@ export default function DashboardPage() {
                     </div>
                     <div>
                       <h4 className="font-bold text-xs md:text-sm text-slate-900 leading-tight">Level 12</h4>
-                      <p className="text-[10px] text-slate-400 mt-0.5">520 XP until Level 13</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">{3000 - xp} XP until Level 13</p>
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
                     <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#7c3aed] rounded-full" style={{ width: "80%" }}></div>
+                      <div className="h-full bg-[#7c3aed] rounded-full" style={{ width: `${(xp / 3000) * 100}%` }}></div>
                     </div>
                     <div className="flex justify-between text-[9px] text-slate-400 font-bold">
-                      <span>2,480 XP</span>
+                      <span>{xp} XP</span>
                       <span>3,000 XP</span>
                     </div>
                   </div>
@@ -812,9 +873,9 @@ export default function DashboardPage() {
                     {["M", "T", "W", "T", "F", "S"].map((day, idx) => (
                       <div key={idx} className="flex flex-col items-center gap-2">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${
-                          idx < 5 ? "bg-[#7c3aed] text-white shadow-sm" : "bg-slate-100 text-slate-400 border border-slate-200/40"
+                          streakDays[idx] ? "bg-[#7c3aed] text-white shadow-sm" : "bg-slate-100 text-slate-400 border border-slate-200/40"
                         }`}>
-                          {idx < 5 ? "✓" : ""}
+                          {streakDays[idx] ? "✓" : ""}
                         </div>
                         <span className="text-[10px] font-bold text-slate-400">{day}</span>
                       </div>

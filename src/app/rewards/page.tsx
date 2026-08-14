@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // --- SVG NAVIGATION & WIDGET ICONS ---
 const DashboardIcon = () => (
@@ -96,20 +97,49 @@ const LockIcon = () => (
 );
 
 export default function RewardsPage() {
+  const router = useRouter();
+  // --- STATE ---
+  const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState("Fahim Siddique");
+  const [xp, setXp] = useState(2480);
+  const [coins, setCoins] = useState(240);
+  const [streak, setStreak] = useState(5);
+  const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
   const [completedSprints, setCompletedSprints] = useState(1);
+  const [totalPlannedSprints, setTotalPlannedSprints] = useState(5);
+  
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedAchievement, setSelectedAchievement] = useState<string | null>(null);
 
-  // Sync state with localStorage completed count
+  // Fetch me on mount
   useEffect(() => {
-    const saved = localStorage.getItem("sprintflow_completed_sprints");
-    if (saved) {
-      setCompletedSprints(parseInt(saved, 10));
-    }
+    const fetchMe = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) {
+          router.push("/login");
+          return;
+        }
+        const data = await res.json();
+        setUserName(data.user.name);
+        setXp(data.user.rewards.xp);
+        setCoins(data.user.rewards.coins);
+        setStreak(data.user.rewards.streak);
+        setUnlockedAchievements(data.user.rewards.achievements || []);
+        setHistory(data.user.rewards.history || []);
+        setCompletedSprints(data.user.planner.completedSprintsCount || 0);
+        setTotalPlannedSprints(data.user.settings.dailyGoal || 5);
+        setLoading(false);
+      } catch (err) {
+        console.error("Fetch rewards stats error:", err);
+        router.push("/login");
+      }
+    };
+    fetchMe();
   }, []);
 
-  const totalPlannedSprints = 5;
-  const currentCompletedCount = Math.min(totalPlannedSprints, 2 + completedSprints);
+  const currentCompletedCount = Math.min(totalPlannedSprints, completedSprints);
   const progressRatio = currentCompletedCount / totalPlannedSprints;
 
   const ringCircumference = 282.74; // 2 * PI * 45
@@ -173,11 +203,11 @@ export default function RewardsPage() {
       {/* User Profile Footer */}
       <div className="flex items-center justify-between border-t border-slate-100 pt-5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#e0e7ff] text-[#4f46e5] font-bold flex items-center justify-center text-sm border border-indigo-100">
-            FS
+          <div className="w-10 h-10 rounded-full bg-[#e0e7ff] text-[#4f46e5] font-bold flex items-center justify-center text-xs border border-indigo-100 uppercase select-none">
+            {userName.split(" ").map(n => n[0]).join("")}
           </div>
           <div>
-            <h5 className="font-semibold text-sm text-slate-900 leading-tight">Fahim Siddique</h5>
+            <h5 className="font-semibold text-sm text-slate-900 leading-tight">{userName}</h5>
             <p className="text-[11px] text-slate-400 mt-0.5">Level 12 • Pro</p>
           </div>
         </div>
@@ -185,6 +215,18 @@ export default function RewardsPage() {
       </div>
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center font-sans">
+        <div className="relative w-16 h-16 flex items-center justify-center select-none">
+          <div className="absolute inset-0 bg-[#7c3aed]/5 backdrop-blur-md rounded-full border border-[#7c3aed]/10 animate-pulse"></div>
+          <div className="w-12 h-12 border-4 border-[#7c3aed]/20 border-t-[#7c3aed] rounded-full animate-spin"></div>
+        </div>
+        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-4 animate-pulse">Loading workspace...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex bg-slate-50 text-slate-800 font-sans">
@@ -262,7 +304,7 @@ export default function RewardsPage() {
             {/* Coins Counter badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 border border-orange-200 bg-orange-50/50 text-orange-600 rounded-xl text-xs md:text-sm font-bold shadow-sm">
               <CoinOutlineIcon />
-              <span>340 coins</span>
+              <span>{coins} coins</span>
             </div>
           </div>
         </header>
@@ -288,16 +330,16 @@ export default function RewardsPage() {
                       Level 12
                       <span className="bg-white/10 border border-white/20 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">👑 Focus Architect</span>
                     </h3>
-                    <p className="text-xs text-white/80 mt-1 leading-normal">520 XP until Level 13 — about 4 more sprints</p>
+                    <p className="text-xs text-white/80 mt-1 leading-normal">{3000 - xp} XP until Level 13 — about {Math.ceil((3000 - xp) / 120)} more sprints</p>
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
                   <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
-                    <div className="h-full bg-white rounded-full transition-all duration-500" style={{ width: "80%" }}></div>
+                    <div className="h-full bg-white rounded-full transition-all duration-500" style={{ width: `${(xp / 3000) * 100}%` }}></div>
                   </div>
                   <div className="flex justify-between text-[10px] text-white/50 pt-1 font-semibold">
-                    <span>2,480 XP</span>
+                    <span>{xp} XP</span>
                     <span>3,000 XP</span>
                   </div>
                 </div>
@@ -307,21 +349,21 @@ export default function RewardsPage() {
                   <div className="space-y-1">
                     <div className="flex items-center justify-center gap-1.5 text-white/85 text-xs font-semibold">
                       <LightningIcon />
-                      <span>2,480</span>
+                      <span>{xp}</span>
                     </div>
                     <p className="text-[10px] text-white/60 uppercase font-bold tracking-wider">Total XP</p>
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center justify-center gap-1.5 text-white/85 text-xs font-semibold">
                       <span>🪙</span>
-                      <span>340</span>
+                      <span>{coins}</span>
                     </div>
                     <p className="text-[10px] text-white/60 uppercase font-bold tracking-wider">Coins</p>
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center justify-center gap-1.5 text-white/85 text-xs font-semibold">
                       <span>🔥</span>
-                      <span>7</span>
+                      <span>{streak}</span>
                     </div>
                     <p className="text-[10px] text-white/60 uppercase font-bold tracking-wider">Day streak</p>
                   </div>
@@ -509,30 +551,22 @@ export default function RewardsPage() {
               <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-4">
                 <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">Recent Rewards</h3>
                 
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between text-xs md:text-sm font-semibold">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-purple-50 text-[#7c3aed] flex items-center justify-center">⚡</div>
-                      <span className="text-slate-600">Sprint completed</span>
-                    </div>
-                    <span className="text-[#7c3aed] font-bold">+40 XP</span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs md:text-sm font-semibold">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center">🪙</div>
-                      <span className="text-slate-600">Daily goal bonus</span>
-                    </div>
-                    <span className="text-orange-500 font-bold">+50 coins</span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs md:text-sm font-semibold">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-green-50 text-green-600 flex items-center justify-center">🌱</div>
-                      <span className="text-slate-600">Streak extended</span>
-                    </div>
-                    <span className="text-green-600 font-bold">+25 XP</span>
-                  </div>
+                <div className="space-y-4 animate-fade-in">
+                  {history.length > 0 ? (
+                    history.slice(0, 5).map((item) => (
+                      <div key={item.id} className="flex items-center justify-between text-xs md:text-sm font-semibold">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded-lg bg-purple-50 text-[#7c3aed] flex items-center justify-center text-xs">
+                            {item.text.toLowerCase().includes("badge") ? "👑" : item.text.toLowerCase().includes("sprint") ? "⚡" : "🪙"}
+                          </div>
+                          <span className="text-slate-600 line-clamp-1">{item.text}</span>
+                        </div>
+                        <span className="text-[#7c3aed] font-bold">+{item.xp} XP</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center text-[10px] text-slate-400 py-4 font-bold uppercase tracking-wider">No reward history logged.</div>
+                  )}
                 </div>
               </div>
 

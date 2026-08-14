@@ -73,10 +73,36 @@ export default function OnboardingPage() {
   const [workingHoursStart, setWorkingHoursStart] = useState("9:00 AM");
   const [workingHoursEnd, setWorkingHoursEnd] = useState("6:00 PM");
 
-  const handleNotificationSubmit = (enabled: boolean) => {
+  const saveSettings = async (notificationsEnabled: boolean) => {
+    try {
+      const res = await fetch("/api/user/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          settings: {
+            sprintLength,
+            breakLength,
+            longBreakLength,
+            dailyGoal,
+            workingHoursStart,
+            workingHoursEnd,
+            notificationsEnabled
+          }
+        })
+      });
+      if (!res.ok) {
+        console.error("Failed to save settings to server");
+      }
+    } catch (err) {
+      console.error("Save settings error:", err);
+    }
+  };
+
+  const handleNotificationSubmit = async (enabled: boolean) => {
     if (enabled) {
       alert("SprintFlow: Push notifications enabled successfully!");
     }
+    await saveSettings(enabled);
     setStep(5);
   };
 

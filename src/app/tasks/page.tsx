@@ -123,13 +123,57 @@ export default function TasksPage() {
   const [aiTasks, setAiTasks] = useState<ParsedTask[]>([]);
   const [sprints, setSprints] = useState<BreakdownSprint[]>([]);
 
-  // Load saved key from localStorage on mount
+  const [userName, setUserName] = useState("Fahim Siddique");
+  const [loading, setLoading] = useState(true);
+
+  // Initialize data on mount
   useEffect(() => {
-    const savedKey = localStorage.getItem("sprintflow_gemini_api_key");
-    if (savedKey) {
-      setApiKey(savedKey);
-      setTempApiKey(savedKey);
-    }
+    const initPage = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) {
+          router.push("/login");
+          return;
+        }
+        const data = await res.json();
+        setUserName(data.user.name);
+        
+        // Load API key from settings if present
+        if (data.user.settings?.geminiApiKey) {
+          setApiKey(data.user.settings.geminiApiKey);
+          setTempApiKey(data.user.settings.geminiApiKey);
+        }
+
+        // Fetch sprints and tasks from API
+        const sprintsRes = await fetch("/api/sprints");
+        const tasksRes = await fetch("/api/tasks");
+        
+        if (sprintsRes.ok && tasksRes.ok) {
+          const sprintsData = await sprintsRes.json();
+          const tasksData = await tasksRes.json();
+          
+          if (sprintsData && sprintsData.sprints && sprintsData.sprints.length > 0) {
+            // Sprints in DB have object subtasks, map name for frontend string[] compatibility
+            const mappedSprints = sprintsData.sprints.map((s: any) => ({
+              ...s,
+              subtasks: s.subtasks.map((st: any) => typeof st === "string" ? st : (st.name || ""))
+            }));
+            setSprints(mappedSprints);
+            
+            const mappedTasks = tasksData ? (tasksData.tasks || []) : [];
+            setAiTasks(mappedTasks);
+            
+            setViewState("breakdown");
+          }
+        }
+        
+        setLoading(false);
+      } catch (err) {
+        console.error("Tasks init error:", err);
+        router.push("/login");
+      }
+    };
+    initPage();
   }, []);
 
   // Derived tasks count
@@ -137,6 +181,23 @@ export default function TasksPage() {
     .split("\n")
     .map(line => line.trim())
     .filter(line => line.length > 0).length;
+
+  const saveTasksAndSprints = async (updatedTasks: any[], updatedSprints: any[]) => {
+    try {
+      await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tasks: updatedTasks })
+      });
+      await fetch("/api/sprints", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sprints: updatedSprints })
+      });
+    } catch (err) {
+      console.error("Save tasks/sprints error:", err);
+    }
+  };
 
   // AI Analysis Execution
   const handleAnalyze = async (bypassKeyCheck = false) => {
@@ -177,14 +238,17 @@ export default function TasksPage() {
       const data = await res.json();
 
       // Set dynamic lists
-      setAiTasks(data.tasks || []);
-      setSprints(
-        (data.sprints || []).map((s: any) => ({
-          ...s,
-          approved: false
-        }))
-      );
+      const tasksPayload = data.tasks || [];
+      const sprintsPayload = (data.sprints || []).map((s: any) => ({
+        ...s,
+        approved: false
+      }));
+
+      setAiTasks(tasksPayload);
+      setSprints(sprintsPayload);
       setViewState("breakdown");
+
+      await saveTasksAndSprints(tasksPayload, sprintsPayload);
 
     } catch (error: any) {
       console.warn("AI breakdown failed, using local offline simulator fallback:", error);
@@ -196,16 +260,16 @@ export default function TasksPage() {
   // Offline simulation fallback logic
   const triggerFallbackSimulation = () => {
     // Mimic API delay before outputting standard mock breakdown
-    setTimeout(() => {
-      setAiTasks([
+    setTimeout(async () => {
+      const mockTasks: ParsedTask[] = [
         { name: "Implement OAuth login flow", priority: "High" },
         { name: "Fix dashboard loading bug", priority: "High" },
         { name: "Write Q3 product update email", priority: "Medium" },
         { name: "Review Sara's PR #218", priority: "Medium" },
         { name: "Design onboarding empty states", priority: "Low" },
         { name: "Plan next sprint & groom backlog", priority: "Low" }
-      ]);
-      setSprints([
+      ];
+      const mockSprints: BreakdownSprint[] = [
         {
           id: "01",
           title: "Set up OAuth providers & routes",
@@ -230,15 +294,30 @@ export default function TasksPage() {
           approved: false,
           subtasks: ["Outline 3 key updates", "Write first draft", "Add CTA + screenshots"]
         }
-      ]);
+      ];
+
+      setAiTasks(mockTasks);
+      setSprints(mockSprints);
       setViewState("breakdown");
+
+      await saveTasksAndSprints(mockTasks, mockSprints);
     }, 1400);
   };
 
-  const handleSaveApiKey = () => {
+  const handleSaveApiKey = async () => {
     localStorage.setItem("sprintflow_gemini_api_key", tempApiKey);
     setApiKey(tempApiKey);
     setShowApiKeyModal(false);
+
+    try {
+      await fetch("/api/user/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ settings: { geminiApiKey: tempApiKey } })
+      });
+    } catch (err) {
+      console.error("Save api key error:", err);
+    }
     
     // Automatically trigger analysis with newly entered key
     setTimeout(() => {
@@ -258,9 +337,12 @@ export default function TasksPage() {
             throw new Error(errorData.error || `API Call failed: ${res.status}`);
           }
           const data = await res.json();
-          setAiTasks(data.tasks || []);
-          setSprints((data.sprints || []).map((s: any) => ({ ...s, approved: false })));
+          const tasksPayload = data.tasks || [];
+          const sprintsPayload = (data.sprints || []).map((s: any) => ({ ...s, approved: false }));
+          setAiTasks(tasksPayload);
+          setSprints(sprintsPayload);
           setViewState("breakdown");
+          await saveTasksAndSprints(tasksPayload, sprintsPayload);
         })
         .catch((error: any) => {
           alert(`AI Analysis failed: ${error.message || "Unknown error"}. Falling back to simulated offline planner.`);
@@ -269,8 +351,19 @@ export default function TasksPage() {
     }, 100);
   };
 
-  const handleToggleApprove = (id: string) => {
-    setSprints(prev => prev.map(s => s.id === id ? { ...s, approved: !s.approved } : s));
+  const handleToggleApprove = async (id: string) => {
+    const updatedSprints = sprints.map(s => s.id === id ? { ...s, approved: !s.approved } : s);
+    setSprints(updatedSprints);
+
+    try {
+      await fetch("/api/sprints", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sprints: updatedSprints })
+      });
+    } catch (err) {
+      console.error("Save sprints error:", err);
+    }
   };
 
   const handleGeneratePlan = () => {
@@ -336,11 +429,11 @@ export default function TasksPage() {
       {/* Profile Footer */}
       <div className="flex items-center justify-between border-t border-slate-100 pt-5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#e0e7ff] text-[#4f46e5] font-bold flex items-center justify-center text-sm border border-indigo-100">
-            FS
+          <div className="w-10 h-10 rounded-full bg-[#e0e7ff] text-[#4f46e5] font-bold flex items-center justify-center text-xs border border-indigo-100 uppercase select-none">
+            {userName.split(" ").map(n => n[0]).join("")}
           </div>
           <div>
-            <h5 className="font-semibold text-sm text-slate-900 leading-tight">Fahim Siddique</h5>
+            <h5 className="font-semibold text-sm text-slate-900 leading-tight">{userName}</h5>
             <p className="text-[11px] text-slate-400 mt-0.5">Level 12 • Pro</p>
           </div>
         </div>
@@ -348,6 +441,18 @@ export default function TasksPage() {
       </div>
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center font-sans">
+        <div className="relative w-16 h-16 flex items-center justify-center select-none">
+          <div className="absolute inset-0 bg-[#7c3aed]/5 backdrop-blur-md rounded-full border border-[#7c3aed]/10 animate-pulse"></div>
+          <div className="w-12 h-12 border-4 border-[#7c3aed]/20 border-t-[#7c3aed] rounded-full animate-spin"></div>
+        </div>
+        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-4 animate-pulse">Loading workspace...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex bg-slate-50 text-slate-800 font-sans relative">
