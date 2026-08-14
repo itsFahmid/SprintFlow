@@ -11,12 +11,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const session = getSession(sessionCookie.value);
+    const session = await getSession(sessionCookie.value);
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = getUserById(session.userId);
+    const user = await getUserById(session.userId);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -37,12 +37,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const session = getSession(sessionCookie.value);
+    const session = await getSession(sessionCookie.value);
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = getUserById(session.userId);
+    const user = await getUserById(session.userId);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     }
 
     user.tasks = tasks;
-    updateUser(user);
+    await updateUser(user);
 
     return NextResponse.json({ success: true, tasks: user.tasks });
   } catch (error) {

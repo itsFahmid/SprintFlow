@@ -1,8 +1,12 @@
 import fs from "fs";
 import path from "path";
+import postgres from "postgres";
 
-// Define the root db.json path
 const DB_FILE_PATH = path.join(process.cwd(), "db.json");
+
+// --- CONNECTION SPECIFICATION ---
+const connectionString = process.env.DATABASE_URL;
+const sql = connectionString ? postgres(connectionString, { ssl: "require" }) : null;
 
 // --- INTERFACES & SCHEMAS ---
 export interface UserSettings {
@@ -44,7 +48,7 @@ export interface PlannerItem {
   duration: number;
   type: "sprint" | "short_break" | "long_break";
   completed: boolean;
-  sprintId?: string; // Links back to the sprint
+  sprintId?: string;
 }
 
 export interface RewardHistoryItem {
@@ -59,7 +63,7 @@ export interface UserRecord {
   id: string;
   name: string;
   email: string;
-  passwordHash: string; // Stored in plain text or simple hash for mock server auth
+  passwordHash: string;
   settings: UserSettings;
   tasks: TaskRecord[];
   sprints: SprintRecord[];
@@ -67,8 +71,8 @@ export interface UserRecord {
     xp: number;
     coins: number;
     streak: number;
-    streakDays: boolean[]; // Mon-Sat streaks: size 6 representing [Mon, Tue, Wed, Thu, Fri, Sat]
-    achievements: string[]; // Unlocked badge IDs
+    streakDays: boolean[];
+    achievements: string[];
     history: RewardHistoryItem[];
   };
   planner: {
@@ -88,60 +92,137 @@ interface DatabaseSchema {
   sessions: SessionRecord[];
 }
 
-// Helper to initialize db.json if missing
-function ensureDbExists() {
-  if (!fs.existsSync(DB_FILE_PATH)) {
-    const initialData: DatabaseSchema = {
-      users: [],
-      sessions: []
-    };
-    fs.writeFileSync(DB_FILE_PATH, JSON.stringify(initialData, null, 2), "utf8");
+// Ensure database table setup for Postgres runs on load
+let dbInitializedPromise: Promise<void> | null = null;
+
+async function ensureDbInitialized() {
+  if (!sql) {
+    // Local file fallback initialization
+    if (!fs.existsSync(DB_FILE_PATH)) {
+      const initialData: DatabaseSchema = { users: [], sessions: [] };
+      fs.writeFileSync(DB_FILE_PATH, JSON.stringify(initialData, null, 2), "utf8");
+    }
+    return;
   }
+
+  if (dbInitializedPromise) return dbInitializedPromise;
+
+  dbInitializedPromise = (async () => {
+    try {
+      // Create user table storing metadata inside a JSONB column
+      await sql`
+        CREATE TABLE IF NOT EXISTS sprintflow_users (
+          id TEXT PRIMARY KEY,
+          email TEXT UNIQUE NOT NULL,
+          password_hash TEXT NOT NULL,
+          data JSONB NOT NULL
+        );
+      `;
+      // Create session tokens mapping
+      await sql`
+        CREATE TABLE IF NOT EXISTS sprintflow_sessions (
+          token TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          expires_at TIMESTAMP NOT NULL
+        );
+      `;
+      console.log("Postgres tables verified successfully.");
+    } catch (err) {
+      console.error("Postgres table setup error:", err);
+      dbInitializedPromise = null; // retry on next call
+    }
+  })();
+
+  return dbInitializedPromise;
 }
 
-// Reads the raw db object
-export function getDb(): DatabaseSchema {
-  ensureDbExists();
+// Reads local raw db from file
+function getLocalDb(): DatabaseSchema {
+  if (!fs.existsSync(DB_FILE_PATH)) {
+    return { users: [], sessions: [] };
+  }
   try {
     const raw = fs.readFileSync(DB_FILE_PATH, "utf8");
     return JSON.parse(raw) as DatabaseSchema;
   } catch (error) {
-    console.error("DB read error, returning fresh schema:", error);
     return { users: [], sessions: [] };
   }
 }
 
-// Saves the db object
-export function saveDb(data: DatabaseSchema) {
+// Saves local raw db to file
+function saveLocalDb(data: DatabaseSchema) {
   try {
     fs.writeFileSync(DB_FILE_PATH, JSON.stringify(data, null, 2), "utf8");
   } catch (error) {
-    console.error("DB save error:", error);
+    console.error("Local DB save error:", error);
   }
 }
 
-// --- USER OPERATIONS ---
-export function getUserByEmail(email: string): UserRecord | null {
-  const db = getDb();
-  return db.users.find(u => u.email.toLowerCase() === email.toLowerCase()) || null;
+// --- HYBRID EXPORT OPERATIONS ---
+
+export async function getUserByEmail(email: string): Promise<UserRecord | null> {
+  await ensureDbInitialized();
+  if (sql) {
+    try {
+      const rows = await sql`
+        SELECT id, email, password_hash, data 
+        FROM sprintflow_users 
+        WHERE LOWER(email) = ${email.toLowerCase()};
+      `;
+      if (rows.length === 0) return null;
+      const row = rows[0];
+      return {
+        id: row.id,
+        email: row.email,
+        passwordHash: row.password_hash,
+        ...row.data
+      } as UserRecord;
+    } catch (err) {
+      console.error("getUserByEmail Postgres error:", err);
+      return null;
+    }
+  } else {
+    const db = getLocalDb();
+    return db.users.find(u => u.email.toLowerCase() === email.toLowerCase()) || null;
+  }
 }
 
-export function getUserById(id: string): UserRecord | null {
-  const db = getDb();
-  return db.users.find(u => u.id === id) || null;
+export async function getUserById(id: string): Promise<UserRecord | null> {
+  await ensureDbInitialized();
+  if (sql) {
+    try {
+      const rows = await sql`
+        SELECT id, email, password_hash, data 
+        FROM sprintflow_users 
+        WHERE id = ${id};
+      `;
+      if (rows.length === 0) return null;
+      const row = rows[0];
+      return {
+        id: row.id,
+        email: row.email,
+        passwordHash: row.password_hash,
+        ...row.data
+      } as UserRecord;
+    } catch (err) {
+      console.error("getUserById Postgres error:", err);
+      return null;
+    }
+  } else {
+    const db = getLocalDb();
+    return db.users.find(u => u.id === id) || null;
+  }
 }
 
-export function createUser(name: string, email: string, passwordHash: string): UserRecord {
-  const db = getDb();
-  
-  // Default checklist tasks
+export async function createUser(name: string, email: string, passwordHash: string): Promise<UserRecord> {
+  await ensureDbInitialized();
+
   const defaultTasks: TaskRecord[] = [
     { id: 1, name: "Review PR #218 from Sara", duration: "15 min • 1 sprint", priority: "Medium", completed: false },
     { id: 2, name: "Write sprint retro notes", duration: "20 min • 1 sprint", priority: "Low", completed: false },
     { id: 3, name: "Prep design handoff", duration: "30 min • 1 sprint", priority: "High", completed: false }
   ];
 
-  // Default mock sprints
   const defaultSprints: SprintRecord[] = [
     {
       id: "01",
@@ -181,7 +262,6 @@ export function createUser(name: string, email: string, passwordHash: string): U
     }
   ];
 
-  // Default timeline scheduler
   const defaultTimeline: PlannerItem[] = [
     { id: "tl-01", title: "OAuth setup (Sprint 1)", duration: 25, type: "sprint", completed: true, sprintId: "01" },
     { id: "tl-02", title: "Short Rest", duration: 5, type: "short_break", completed: true },
@@ -208,10 +288,10 @@ export function createUser(name: string, email: string, passwordHash: string): U
     tasks: defaultTasks,
     sprints: defaultSprints,
     rewards: {
-      xp: 2480, // Matches level 12 starter stats in Figma
+      xp: 2480,
       coins: 240,
       streak: 5,
-      streakDays: [true, true, true, true, true, false], // Mon-Sat indicators
+      streakDays: [true, true, true, true, true, false],
       achievements: ["badge-streak", "badge-power", "badge-sharp", "badge-early", "badge-centurion"],
       history: [
         { id: "h-1", text: "Streak starter badge unlocked", xp: 100, coins: 20, timestamp: new Date().toISOString() },
@@ -220,58 +300,154 @@ export function createUser(name: string, email: string, passwordHash: string): U
     },
     planner: {
       timeline: defaultTimeline,
-      completedSprintsCount: 1 // Sprint 1 is completed by default
+      completedSprintsCount: 1
     }
   };
 
-  db.users.push(newUser);
-  saveDb(db);
+  if (sql) {
+    try {
+      const dataPayload = {
+        name: newUser.name,
+        settings: newUser.settings,
+        tasks: newUser.tasks,
+        sprints: newUser.sprints,
+        rewards: newUser.rewards,
+        planner: newUser.planner
+      };
+      await sql`
+        INSERT INTO sprintflow_users (id, email, password_hash, data)
+        VALUES (${newUser.id}, ${newUser.email}, ${newUser.passwordHash}, ${sql.json(dataPayload as any)});
+      `;
+    } catch (err) {
+      console.error("createUser Postgres error:", err);
+    }
+  } else {
+    const db = getLocalDb();
+    db.users.push(newUser);
+    saveLocalDb(db);
+  }
+
   return newUser;
 }
 
-export function updateUser(user: UserRecord) {
-  const db = getDb();
-  const idx = db.users.findIndex(u => u.id === user.id);
-  if (idx !== -1) {
-    db.users[idx] = user;
-    saveDb(db);
+export async function updateUser(user: UserRecord): Promise<void> {
+  await ensureDbInitialized();
+  if (sql) {
+    try {
+      const dataPayload = {
+        name: user.name,
+        settings: user.settings,
+        tasks: user.tasks,
+        sprints: user.sprints,
+        rewards: user.rewards,
+        planner: user.planner
+      };
+      await sql`
+        UPDATE sprintflow_users 
+        SET email = ${user.email},
+            password_hash = ${user.passwordHash},
+            data = ${sql.json(dataPayload as any)}
+        WHERE id = ${user.id};
+      `;
+    } catch (err) {
+      console.error("updateUser Postgres error:", err);
+    }
+  } else {
+    const db = getLocalDb();
+    const idx = db.users.findIndex(u => u.id === user.id);
+    if (idx !== -1) {
+      db.users[idx] = user;
+      saveLocalDb(db);
+    }
   }
 }
 
 // --- SESSION OPERATIONS ---
-export function createSession(userId: string): SessionRecord {
-  const db = getDb();
-  
-  // Clean up any old sessions for this user
-  db.sessions = db.sessions.filter(s => s.userId !== userId);
 
+export async function createSession(userId: string): Promise<SessionRecord> {
+  await ensureDbInitialized();
   const token = "sess_" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  // Session active for 7 days
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-
   const session: SessionRecord = { token, userId, expiresAt };
-  db.sessions.push(session);
-  saveDb(db);
 
-  return session;
-}
-
-export function getSession(token: string): SessionRecord | null {
-  const db = getDb();
-  const session = db.sessions.find(s => s.token === token);
-  if (!session) return null;
-
-  // Check expiration
-  if (new Date(session.expiresAt).getTime() < Date.now()) {
-    deleteSession(token);
-    return null;
+  if (sql) {
+    try {
+      // Clear old sessions first
+      await sql`
+        DELETE FROM sprintflow_sessions 
+        WHERE user_id = ${userId};
+      `;
+      // Write new session mapping
+      await sql`
+        INSERT INTO sprintflow_sessions (token, user_id, expires_at)
+        VALUES (${session.token}, ${session.userId}, ${session.expiresAt});
+      `;
+    } catch (err) {
+      console.error("createSession Postgres error:", err);
+    }
+  } else {
+    const db = getLocalDb();
+    db.sessions = db.sessions.filter(s => s.userId !== userId);
+    db.sessions.push(session);
+    saveLocalDb(db);
   }
 
   return session;
 }
 
-export function deleteSession(token: string) {
-  const db = getDb();
-  db.sessions = db.sessions.filter(s => s.token !== token);
-  saveDb(db);
+export async function getSession(token: string): Promise<SessionRecord | null> {
+  await ensureDbInitialized();
+  if (sql) {
+    try {
+      const rows = await sql`
+        SELECT token, user_id, expires_at 
+        FROM sprintflow_sessions 
+        WHERE token = ${token};
+      `;
+      if (rows.length === 0) return null;
+      const session = {
+        token: rows[0].token,
+        userId: rows[0].user_id,
+        expiresAt: new Date(rows[0].expires_at).toISOString()
+      } as SessionRecord;
+
+      // Check expiration
+      if (new Date(session.expiresAt).getTime() < Date.now()) {
+        await deleteSession(token);
+        return null;
+      }
+      return session;
+    } catch (err) {
+      console.error("getSession Postgres error:", err);
+      return null;
+    }
+  } else {
+    const db = getLocalDb();
+    const session = db.sessions.find(s => s.token === token);
+    if (!session) return null;
+
+    if (new Date(session.expiresAt).getTime() < Date.now()) {
+      await deleteSession(token);
+      return null;
+    }
+    return session;
+  }
+}
+
+export async function deleteSession(token: string): Promise<void> {
+  await ensureDbInitialized();
+  if (sql) {
+    try {
+      await sql`
+        DELETE FROM sprintflow_sessions 
+        WHERE token = ${token};
+      `;
+    } catch (err) {
+      console.error("deleteSession Postgres error:", err);
+    }
+  } else {
+    const db = getLocalDb();
+    db.sessions = db.sessions.filter(s => s.token !== token);
+    saveLocalDb(db);
+  }
 }

@@ -11,18 +11,16 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const session = getSession(sessionCookie.value);
+    const session = await getSession(sessionCookie.value);
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = getUserById(session.userId);
+    const user = await getUserById(session.userId);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Map subtasks to strings for frontend compatibility if needed
-    // But since the frontend can read the name property or string directly, we return them as is
     return NextResponse.json({ success: true, sprints: user.sprints });
   } catch (error) {
     console.error("GET sprints error:", error);
@@ -39,12 +37,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const session = getSession(sessionCookie.value);
+    const session = await getSession(sessionCookie.value);
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = getUserById(session.userId);
+    const user = await getUserById(session.userId);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -74,7 +72,7 @@ export async function POST(req: NextRequest) {
         : []
     }));
 
-    updateUser(user);
+    await updateUser(user);
 
     return NextResponse.json({ success: true, sprints: user.sprints });
   } catch (error) {

@@ -10,8 +10,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Name, email, and password are required" }, { status: 400 });
     }
 
-    // Check if email already registered
-    const existingUser = getUserByEmail(email);
+    // Check if email already registered (asynchronously)
+    const existingUser = await getUserByEmail(email);
     if (existingUser) {
       return NextResponse.json({ error: "Email is already registered" }, { status: 400 });
     }
@@ -19,11 +19,11 @@ export async function POST(req: NextRequest) {
     // Mock password hashing for local developer setup
     const passwordHash = "mock_" + password;
 
-    // Create the user profile
-    const user = createUser(name, email, passwordHash);
+    // Create the user profile (asynchronously)
+    const user = await createUser(name, email, passwordHash);
 
-    // Create session token
-    const session = createSession(user.id);
+    // Create session token (asynchronously)
+    const session = await createSession(user.id);
 
     // Set secure cookie
     const cookieStore = await cookies();
