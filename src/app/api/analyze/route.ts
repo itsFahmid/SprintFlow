@@ -20,6 +20,12 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: "API Key missing" }, { status: 401 });
     }
 
+    console.log("Gemini API Request details:", {
+      keySource: req.headers.get("x-gemini-api-key") ? "header" : "env",
+      keyPrefix: apiKey.substring(0, 8),
+      keyLength: apiKey.length
+    });
+
     // 3. Initialize Google Generative AI
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({

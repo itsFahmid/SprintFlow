@@ -699,14 +699,26 @@ export default function TasksPage() {
                 <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5" htmlFor="api-key-input">
                   Gemini API Key
                 </label>
-                <input
-                  type="password"
-                  id="api-key-input"
-                  className="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#7c3aed] focus:bg-white focus:ring-2 focus:ring-purple-100 transition-all font-mono"
-                  placeholder="AIzaSy..."
-                  value={tempApiKey}
-                  onChange={(e) => setTempApiKey(e.target.value)}
-                />
+                <div className="relative">
+                  <input
+                    type="password"
+                    id="api-key-input"
+                    className="block w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#7c3aed] focus:bg-white focus:ring-2 focus:ring-purple-100 transition-all font-mono"
+                    placeholder="AIzaSy..."
+                    value={tempApiKey}
+                    onChange={(e) => setTempApiKey(e.target.value)}
+                    onFocus={(e) => e.target.select()}
+                  />
+                  {tempApiKey && (
+                    <button 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 font-semibold cursor-pointer px-1 bg-transparent border-0"
+                      onClick={() => setTempApiKey("")}
+                      type="button"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="flex flex-col gap-2 pt-2">
