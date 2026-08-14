@@ -188,16 +188,16 @@ export default function TasksPage() {
         </Link>
       </li>
       <li>
-        <a href="#" className="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 font-medium text-sm transition-all duration-150">
+        <Link href="/rewards" className="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 font-medium text-sm transition-all duration-150">
           <RewardsIcon />
           Rewards
-        </a>
+        </Link>
       </li>
       <li>
-        <a href="#" className="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 font-medium text-sm transition-all duration-150">
+        <Link href="/analytics" className="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 font-medium text-sm transition-all duration-150">
           <AnalyticsIcon />
           Analytics
-        </a>
+        </Link>
       </li>
     </ul>
   );
