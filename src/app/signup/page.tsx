@@ -32,10 +32,13 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setError(null);
+    setIsSubmitting(true);
 
     try {
       const res = await fetch("/api/auth/signup", {
@@ -47,6 +50,7 @@ export default function SignupPage() {
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Signup failed");
+        setIsSubmitting(false);
         return;
       }
 
@@ -54,6 +58,7 @@ export default function SignupPage() {
     } catch (err) {
       console.error(err);
       setError("An unexpected error occurred. Please try again.");
+      setIsSubmitting(false);
     }
   };
 
@@ -189,9 +194,18 @@ export default function SignupPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full flex items-center justify-center py-3.5 px-4 rounded-xl bg-[#7c3aed] hover:bg-[#6d28d9] text-white text-sm font-semibold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:scale-[1.01] active:scale-[0.99] transition-all duration-150"
+              disabled={isSubmitting}
+              className="w-full flex items-center justify-center py-3.5 px-4 rounded-xl bg-[#7c3aed] hover:bg-[#6d28d9] text-white text-sm font-semibold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:scale-[1.01] active:scale-[0.99] transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              Create account
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                  </svg>
+                  Creating account…
+                </>
+              ) : "Create account"}
             </button>
           </form>
 

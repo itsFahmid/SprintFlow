@@ -72,6 +72,7 @@ export default function SprintsPage() {
   const [xp, setXp] = useState(2480);
   const [coins, setCoins] = useState(240);
   const [rewardsHistory, setRewardsHistory] = useState<any[]>([]);
+  const [sprintTitles, setSprintTitles] = useState<string[]>([]);
 
   // Fetch metrics on mount
   useEffect(() => {
@@ -98,6 +99,17 @@ export default function SprintsPage() {
         setXp(data.user.rewards.xp);
         setCoins(data.user.rewards.coins);
         setRewardsHistory(data.user.rewards.history || []);
+
+        // Fetch sprint titles
+        try {
+          const sprintsRes = await fetch("/api/sprints");
+          if (sprintsRes.ok) {
+            const sprintsData = await sprintsRes.json();
+            if (sprintsData?.sprints?.length > 0) {
+              setSprintTitles(sprintsData.sprints.map((s: any) => s.title || "Focus sprint"));
+            }
+          }
+        } catch (_) {}
 
         setLoading(false);
       } catch (err) {
@@ -340,7 +352,7 @@ export default function SprintsPage() {
         {sprintState === "focus" && (
           <div className="space-y-8 w-full">
             <div>
-              <h2 className="font-heading font-extrabold text-2xl md:text-3xl text-white mb-2">Debug dashboard slow-load</h2>
+              <h2 className="font-heading font-extrabold text-2xl md:text-3xl text-white mb-2">{sprintTitles[completedCount] || sprintTitles[0] || "Focus sprint"}</h2>
               <p className="text-xs md:text-sm text-slate-400 italic">"Deep work compounds. Stay with this one thing."</p>
             </div>
 
