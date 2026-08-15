@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -62,6 +62,7 @@ const BellOnboardingIcon = () => (
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [userName, setUserName] = useState("");
 
   // Rhythm setup state variables
   const [sprintLength, setSprintLength] = useState(25);
@@ -106,6 +107,22 @@ export default function OnboardingPage() {
     setStep(5);
   };
 
+  // Fetch user name on mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          setUserName(data.user.name?.split(" ")[0] || "");
+        }
+      } catch (err) {
+        console.error("Fetch user error:", err);
+      }
+    };
+    fetchUser();
+  }, []);
+
   return (
     <div className="bg-gradient-to-br from-indigo-50/40 via-white to-purple-50/30 min-h-screen flex items-center justify-center p-6 font-sans select-none relative overflow-hidden">
       
@@ -120,7 +137,7 @@ export default function OnboardingPage() {
             <div>
               <WelcomeLogoSVG />
               <h1 className="font-heading font-extrabold text-3xl md:text-4xl text-slate-900 leading-tight">
-                Welcome to SprintFlow, Fahim 👋
+                Welcome to SprintFlow{userName ? `, ${userName}` : ""} 👋
               </h1>
               <p className="text-slate-500 text-sm md:text-base max-w-lg mx-auto mt-3 font-medium">
                 Let's set up your focus space. This takes about 30 seconds and tunes SprintFlow to the way you work.

@@ -191,6 +191,13 @@ export default function PlannerPage() {
     </ul>
   );
 
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (_) {}
+    router.push("/login");
+  };
+
   const footerBlock = (
     <div className="space-y-6">
       {/* Go Pro Card */}
@@ -216,7 +223,16 @@ export default function PlannerPage() {
             <p className="text-[11px] text-slate-400 mt-0.5">Level 12 • Pro</p>
           </div>
         </div>
-        <SettingsIcon />
+        <div className="flex items-center gap-1">
+          <SettingsIcon />
+          <button onClick={handleLogout} className="p-1 rounded-lg hover:bg-red-50 transition-colors group" aria-label="Log out" title="Log out">
+            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className="text-slate-400 group-hover:text-red-500 transition-colors">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );
