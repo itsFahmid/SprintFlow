@@ -29,7 +29,14 @@ export async function GET(req: NextRequest) {
         email: user.email,
         settings: user.settings,
         rewards: user.rewards,
-        planner: user.planner
+        planner: user.planner,
+        subscription: user.subscription || {
+          plan: "Free",
+          status: "none",
+          period: "none",
+          reminderEnabled: true,
+          history: []
+        }
       }
     });
 

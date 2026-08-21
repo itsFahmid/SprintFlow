@@ -13,10 +13,32 @@ export interface UserSettings {
   sprintLength: number;
   breakLength: number;
   longBreakLength: number;
+  longBreakInterval: number;
+  autoStartBreaks: boolean;
+  autoStartNextSprint: boolean;
+  soundTheme: string;
+  tickingSound: boolean;
+  soundVolume: number;
   dailyGoal: number;
   workingHoursStart: string;
   workingHoursEnd: string;
   notificationsEnabled: boolean;
+  pushEnabled: boolean;
+  emailNotifications: boolean;
+  sprintReminders: boolean;
+  breakNudges: boolean;
+  streakAlerts: boolean;
+  dailySummary: boolean;
+  achievementUnlocks: boolean;
+  productUpdates: boolean;
+  quietHoursEnabled: boolean;
+  quietHoursStart: string;
+  quietHoursEnd: string;
+  usageAnalytics: boolean;
+  personalizedAi: boolean;
+  showOnLeaderboards: boolean;
+  username?: string;
+  avatarUrl?: string;
   geminiApiKey?: string;
 }
 
@@ -59,6 +81,30 @@ export interface RewardHistoryItem {
   timestamp: string;
 }
 
+export interface PaymentHistoryItem {
+  id: string;
+  plan: string;
+  durationMonths: number;
+  amount: number;
+  currency: string;
+  method: "bKash" | "Nagad" | "Rocket" | "Card";
+  accountNumber?: string;
+  transactionId: string;
+  date: string;
+  status: "Paid" | "Failed";
+}
+
+export interface SubscriptionRecord {
+  plan: "Free" | "Pro";
+  status: "active" | "trial" | "expired" | "none";
+  period: "1_month" | "3_months" | "none";
+  startDate?: string;
+  endDate?: string;
+  trialEndsAt?: string;
+  reminderEnabled: boolean;
+  history: PaymentHistoryItem[];
+}
+
 export interface UserRecord {
   id: string;
   name: string;
@@ -79,6 +125,7 @@ export interface UserRecord {
     timeline: PlannerItem[];
     completedSprintsCount: number;
   };
+  subscription?: SubscriptionRecord;
 }
 
 export interface SessionRecord {
@@ -280,10 +327,31 @@ export async function createUser(name: string, email: string, passwordHash: stri
       sprintLength: 25,
       breakLength: 5,
       longBreakLength: 15,
+      longBreakInterval: 4,
+      autoStartBreaks: true,
+      autoStartNextSprint: false,
+      soundTheme: "Soft chime",
+      tickingSound: false,
+      soundVolume: 80,
       dailyGoal: 5,
       workingHoursStart: "9:00 AM",
       workingHoursEnd: "6:00 PM",
-      notificationsEnabled: false
+      notificationsEnabled: true,
+      pushEnabled: true,
+      emailNotifications: true,
+      sprintReminders: true,
+      breakNudges: true,
+      streakAlerts: true,
+      dailySummary: true,
+      achievementUnlocks: false,
+      productUpdates: false,
+      quietHoursEnabled: true,
+      quietHoursStart: "10:00 PM",
+      quietHoursEnd: "7:00 AM",
+      usageAnalytics: true,
+      personalizedAi: true,
+      showOnLeaderboards: false,
+      username: `@${name.toLowerCase().replace(/[^a-z0-9]/g, "")}`
     },
     tasks: defaultTasks,
     sprints: defaultSprints,
@@ -301,6 +369,13 @@ export async function createUser(name: string, email: string, passwordHash: stri
     planner: {
       timeline: defaultTimeline,
       completedSprintsCount: 1
+    },
+    subscription: {
+      plan: "Free",
+      status: "none",
+      period: "none",
+      reminderEnabled: true,
+      history: []
     }
   };
 
@@ -312,7 +387,8 @@ export async function createUser(name: string, email: string, passwordHash: stri
         tasks: newUser.tasks,
         sprints: newUser.sprints,
         rewards: newUser.rewards,
-        planner: newUser.planner
+        planner: newUser.planner,
+        subscription: newUser.subscription
       };
       await sql`
         INSERT INTO sprintflow_users (id, email, password_hash, data)
@@ -340,7 +416,14 @@ export async function updateUser(user: UserRecord): Promise<void> {
         tasks: user.tasks,
         sprints: user.sprints,
         rewards: user.rewards,
-        planner: user.planner
+        planner: user.planner,
+        subscription: user.subscription || {
+          plan: "Free",
+          status: "none",
+          period: "none",
+          reminderEnabled: true,
+          history: []
+        }
       };
       await sql`
         UPDATE sprintflow_users 
@@ -360,6 +443,15 @@ export async function updateUser(user: UserRecord): Promise<void> {
       saveLocalDb(db);
     }
   }
+}
+
+export async function updateUserSubscription(userId: string, subscription: SubscriptionRecord): Promise<UserRecord | null> {
+  const user = await getUserById(userId);
+  if (!user) return null;
+
+  user.subscription = subscription;
+  await updateUser(user);
+  return user;
 }
 
 // --- SESSION OPERATIONS ---

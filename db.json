@@ -1153,6 +1153,716 @@
         ],
         "completedSprintsCount": 2
       }
+    },
+    {
+      "id": "qt5xiv8",
+      "name": "Test User",
+      "email": "fahimsahmed01@gmail.com",
+      "passwordHash": "mock_Password123!",
+      "settings": {
+        "sprintLength": 25,
+        "breakLength": 5,
+        "longBreakLength": 15,
+        "dailyGoal": 5,
+        "workingHoursStart": "9:00 AM",
+        "workingHoursEnd": "6:00 PM",
+        "notificationsEnabled": false,
+        "username": "@fahim",
+        "longBreakInterval": 4,
+        "autoStartBreaks": true,
+        "autoStartNextSprint": false,
+        "soundTheme": "Soft chime",
+        "tickingSound": false,
+        "soundVolume": 75,
+        "pushEnabled": true,
+        "emailNotifications": true,
+        "sprintReminders": true,
+        "breakNudges": true,
+        "streakAlerts": true,
+        "dailySummary": true,
+        "achievementUnlocks": false,
+        "productUpdates": false,
+        "quietHoursEnabled": true,
+        "quietHoursStart": "10:00 PM",
+        "quietHoursEnd": "7:00 AM",
+        "usageAnalytics": true,
+        "personalizedAi": true,
+        "showOnLeaderboards": false,
+        "geminiApiKey": "AIzaSyDummyKeyForTestingLoadingState"
+      },
+      "tasks": [
+        {
+          "name": "Write the Q3 update email",
+          "priority": "High"
+        }
+      ],
+      "sprints": [
+        {
+          "id": "01",
+          "title": "Set up OAuth providers & routes",
+          "duration": 25,
+          "priority": "High",
+          "approved": true,
+          "subtasks": [
+            {
+              "name": "Configure Google OAuth client",
+              "completed": false
+            },
+            {
+              "name": "Add email/password fallback",
+              "completed": false
+            },
+            {
+              "name": "Wire up redirect routes",
+              "completed": false
+            }
+          ]
+        },
+        {
+          "id": "02",
+          "title": "Debug dashboard slow-load",
+          "duration": 30,
+          "priority": "High",
+          "approved": false,
+          "subtasks": [
+            {
+              "name": "Profile network waterfall",
+              "completed": false
+            },
+            {
+              "name": "Add skeleton loaders",
+              "completed": false
+            },
+            {
+              "name": "Cache initial query",
+              "completed": false
+            }
+          ]
+        },
+        {
+          "id": "03",
+          "title": "Draft Q3 product update email",
+          "duration": 20,
+          "priority": "Medium",
+          "approved": false,
+          "subtasks": [
+            {
+              "name": "Outline 3 key updates",
+              "completed": false
+            },
+            {
+              "name": "Write first draft",
+              "completed": false
+            },
+            {
+              "name": "Add CTA + screenshots",
+              "completed": false
+            }
+          ]
+        }
+      ],
+      "rewards": {
+        "xp": 2600,
+        "coins": 270,
+        "streak": 5,
+        "streakDays": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          false
+        ],
+        "achievements": [
+          "badge-streak",
+          "badge-power",
+          "badge-sharp",
+          "badge-early",
+          "badge-centurion"
+        ],
+        "history": [
+          {
+            "id": "h-f0d13uz",
+            "text": "Sprint 4 completed focus block",
+            "xp": 40,
+            "coins": 10,
+            "timestamp": "2026-08-17T15:12:58.502Z"
+          },
+          {
+            "id": "h-j60l8jk",
+            "text": "Sprint 3 completed focus block",
+            "xp": 40,
+            "coins": 10,
+            "timestamp": "2026-08-17T14:04:38.130Z"
+          },
+          {
+            "id": "h-imvvkza",
+            "text": "Sprint 2 completed focus block",
+            "xp": 40,
+            "coins": 10,
+            "timestamp": "2026-08-17T13:57:58.218Z"
+          },
+          {
+            "id": "h-1",
+            "text": "Streak starter badge unlocked",
+            "xp": 100,
+            "coins": 20,
+            "timestamp": "2026-08-17T13:46:11.282Z"
+          },
+          {
+            "id": "h-2",
+            "text": "Sprint 1 completed focus block",
+            "xp": 40,
+            "coins": 10,
+            "timestamp": "2026-08-17T13:46:11.282Z"
+          }
+        ]
+      },
+      "planner": {
+        "timeline": [
+          {
+            "id": "tl-01",
+            "title": "OAuth setup (Sprint 1)",
+            "duration": 25,
+            "type": "sprint",
+            "completed": true,
+            "sprintId": "01"
+          },
+          {
+            "id": "tl-02",
+            "title": "Short Rest",
+            "duration": 5,
+            "type": "short_break",
+            "completed": true
+          },
+          {
+            "id": "tl-03",
+            "title": "Optimize widgets (Sprint 2)",
+            "duration": 30,
+            "type": "sprint",
+            "completed": false,
+            "sprintId": "02"
+          },
+          {
+            "id": "tl-04",
+            "title": "Short Rest",
+            "duration": 5,
+            "type": "short_break",
+            "completed": false
+          },
+          {
+            "id": "tl-05",
+            "title": "Draft notice (Sprint 3)",
+            "duration": 20,
+            "type": "sprint",
+            "completed": false,
+            "sprintId": "03"
+          },
+          {
+            "id": "tl-06",
+            "title": "Long Break",
+            "duration": 15,
+            "type": "long_break",
+            "completed": false
+          }
+        ],
+        "completedSprintsCount": 4
+      },
+      "subscription": {
+        "plan": "Pro",
+        "status": "active",
+        "period": "3_months",
+        "reminderEnabled": false,
+        "history": [
+          {
+            "id": "tx_1786981779469",
+            "plan": "Pro · 3-Month pass",
+            "durationMonths": 3,
+            "amount": 499,
+            "currency": "BDT",
+            "method": "bKash",
+            "accountNumber": "01700-000000",
+            "transactionId": "SF-CJRX-6KP0",
+            "date": "17 Aug 2026",
+            "status": "Paid"
+          },
+          {
+            "id": "tx_1786981686741",
+            "plan": "Pro · 3-Month pass",
+            "durationMonths": 3,
+            "amount": 499,
+            "currency": "BDT",
+            "method": "bKash",
+            "accountNumber": "01712-345678",
+            "transactionId": "SF-Q9NM-E9LU",
+            "date": "17 Aug 2026",
+            "status": "Paid"
+          }
+        ],
+        "startDate": "2026-08-17T15:49:39.469Z",
+        "endDate": "2027-02-16T15:48:06.741Z"
+      }
+    },
+    {
+      "id": "svollcc",
+      "name": "Test User",
+      "email": "testuser@sprintflow.io",
+      "passwordHash": "mock_password123",
+      "settings": {
+        "sprintLength": 25,
+        "breakLength": 5,
+        "longBreakLength": 15,
+        "longBreakInterval": 4,
+        "autoStartBreaks": true,
+        "autoStartNextSprint": false,
+        "soundTheme": "Soft chime",
+        "tickingSound": false,
+        "soundVolume": 80,
+        "dailyGoal": 5,
+        "workingHoursStart": "9:00 AM",
+        "workingHoursEnd": "6:00 PM",
+        "notificationsEnabled": true,
+        "pushEnabled": true,
+        "emailNotifications": true,
+        "sprintReminders": true,
+        "breakNudges": true,
+        "streakAlerts": true,
+        "dailySummary": true,
+        "achievementUnlocks": false,
+        "productUpdates": false,
+        "quietHoursEnabled": true,
+        "quietHoursStart": "10:00 PM",
+        "quietHoursEnd": "7:00 AM",
+        "usageAnalytics": true,
+        "personalizedAi": true,
+        "showOnLeaderboards": false,
+        "username": "@testuser"
+      },
+      "tasks": [
+        {
+          "id": 1,
+          "name": "Review PR #218 from Sara",
+          "duration": "15 min • 1 sprint",
+          "priority": "Medium",
+          "completed": false
+        },
+        {
+          "id": 2,
+          "name": "Write sprint retro notes",
+          "duration": "20 min • 1 sprint",
+          "priority": "Low",
+          "completed": false
+        },
+        {
+          "id": 3,
+          "name": "Prep design handoff",
+          "duration": "30 min • 1 sprint",
+          "priority": "High",
+          "completed": false
+        }
+      ],
+      "sprints": [
+        {
+          "id": "01",
+          "title": "Set up OAuth providers & routes",
+          "duration": 25,
+          "priority": "High",
+          "approved": true,
+          "subtasks": [
+            {
+              "name": "Install auth dependencies",
+              "completed": false
+            },
+            {
+              "name": "Create Google developer keys",
+              "completed": false
+            },
+            {
+              "name": "Implement login route endpoints",
+              "completed": false
+            },
+            {
+              "name": "Test session credentials cookie tokens",
+              "completed": false
+            }
+          ]
+        },
+        {
+          "id": "02",
+          "title": "Fix dashboard lazy-load delays",
+          "duration": 30,
+          "priority": "High",
+          "approved": true,
+          "subtasks": [
+            {
+              "name": "Diagnose rendering bottleneck",
+              "completed": false
+            },
+            {
+              "name": "Lazy load stats chart widgets",
+              "completed": false
+            },
+            {
+              "name": "Throttle network update calls",
+              "completed": false
+            }
+          ]
+        },
+        {
+          "id": "03",
+          "title": "Write customer update notice text",
+          "duration": 20,
+          "priority": "Medium",
+          "approved": true,
+          "subtasks": [
+            {
+              "name": "Compile release highlight cards",
+              "completed": false
+            },
+            {
+              "name": "Proofread marketing text",
+              "completed": false
+            }
+          ]
+        }
+      ],
+      "rewards": {
+        "xp": 2480,
+        "coins": 240,
+        "streak": 5,
+        "streakDays": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          false
+        ],
+        "achievements": [
+          "badge-streak",
+          "badge-power",
+          "badge-sharp",
+          "badge-early",
+          "badge-centurion"
+        ],
+        "history": [
+          {
+            "id": "h-1",
+            "text": "Streak starter badge unlocked",
+            "xp": 100,
+            "coins": 20,
+            "timestamp": "2026-08-18T02:48:00.868Z"
+          },
+          {
+            "id": "h-2",
+            "text": "Sprint 1 completed focus block",
+            "xp": 40,
+            "coins": 10,
+            "timestamp": "2026-08-18T02:48:00.868Z"
+          }
+        ]
+      },
+      "planner": {
+        "timeline": [
+          {
+            "id": "tl-01",
+            "title": "OAuth setup (Sprint 1)",
+            "duration": 25,
+            "type": "sprint",
+            "completed": true,
+            "sprintId": "01"
+          },
+          {
+            "id": "tl-02",
+            "title": "Short Rest",
+            "duration": 5,
+            "type": "short_break",
+            "completed": true
+          },
+          {
+            "id": "tl-03",
+            "title": "Optimize widgets (Sprint 2)",
+            "duration": 30,
+            "type": "sprint",
+            "completed": false,
+            "sprintId": "02"
+          },
+          {
+            "id": "tl-04",
+            "title": "Short Rest",
+            "duration": 5,
+            "type": "short_break",
+            "completed": false
+          },
+          {
+            "id": "tl-05",
+            "title": "Draft notice (Sprint 3)",
+            "duration": 20,
+            "type": "sprint",
+            "completed": false,
+            "sprintId": "03"
+          },
+          {
+            "id": "tl-06",
+            "title": "Long Break",
+            "duration": 15,
+            "type": "long_break",
+            "completed": false
+          }
+        ],
+        "completedSprintsCount": 1
+      },
+      "subscription": {
+        "plan": "Pro",
+        "status": "active",
+        "period": "3_months",
+        "reminderEnabled": true,
+        "history": [
+          {
+            "id": "tx_1787341878749",
+            "plan": "Pro · 3-Month pass",
+            "durationMonths": 3,
+            "amount": 499,
+            "currency": "BDT",
+            "method": "bKash",
+            "accountNumber": "01712345678",
+            "transactionId": "SF-7S23-JWHZ",
+            "date": "22 Aug 2026",
+            "status": "Paid"
+          },
+          {
+            "id": "tx_1787341605348",
+            "plan": "Pro · 3-Month pass",
+            "durationMonths": 3,
+            "amount": 499,
+            "currency": "BDT",
+            "method": "bKash",
+            "accountNumber": "01712345678",
+            "transactionId": "SF-BZEP-1PEP",
+            "date": "22 Aug 2026",
+            "status": "Paid"
+          }
+        ],
+        "startDate": "2026-08-21T19:51:18.749Z",
+        "endDate": "2027-02-23T19:42:22.747Z"
+      }
+    },
+    {
+      "id": "wm8u7e3",
+      "name": "a",
+      "email": "a@g.com",
+      "passwordHash": "mock_asdfasdf",
+      "settings": {
+        "sprintLength": 25,
+        "breakLength": 5,
+        "longBreakLength": 15,
+        "longBreakInterval": 4,
+        "autoStartBreaks": true,
+        "autoStartNextSprint": false,
+        "soundTheme": "Soft chime",
+        "tickingSound": false,
+        "soundVolume": 80,
+        "dailyGoal": 5,
+        "workingHoursStart": "9:00 AM",
+        "workingHoursEnd": "6:00 PM",
+        "notificationsEnabled": true,
+        "pushEnabled": true,
+        "emailNotifications": true,
+        "sprintReminders": true,
+        "breakNudges": true,
+        "streakAlerts": true,
+        "dailySummary": true,
+        "achievementUnlocks": false,
+        "productUpdates": false,
+        "quietHoursEnabled": true,
+        "quietHoursStart": "10:00 PM",
+        "quietHoursEnd": "7:00 AM",
+        "usageAnalytics": true,
+        "personalizedAi": true,
+        "showOnLeaderboards": false,
+        "username": "@a"
+      },
+      "tasks": [
+        {
+          "id": 1,
+          "name": "Review PR #218 from Sara",
+          "duration": "15 min • 1 sprint",
+          "priority": "Medium",
+          "completed": false
+        },
+        {
+          "id": 2,
+          "name": "Write sprint retro notes",
+          "duration": "20 min • 1 sprint",
+          "priority": "Low",
+          "completed": false
+        },
+        {
+          "id": 3,
+          "name": "Prep design handoff",
+          "duration": "30 min • 1 sprint",
+          "priority": "High",
+          "completed": false
+        }
+      ],
+      "sprints": [
+        {
+          "id": "01",
+          "title": "Set up OAuth providers & routes",
+          "duration": 25,
+          "priority": "High",
+          "approved": true,
+          "subtasks": [
+            {
+              "name": "Install auth dependencies",
+              "completed": true
+            },
+            {
+              "name": "Create Google developer keys",
+              "completed": true
+            },
+            {
+              "name": "Implement login route endpoints",
+              "completed": false
+            },
+            {
+              "name": "Test session credentials cookie tokens",
+              "completed": false
+            }
+          ]
+        },
+        {
+          "id": "02",
+          "title": "Fix dashboard lazy-load delays",
+          "duration": 30,
+          "priority": "High",
+          "approved": false,
+          "subtasks": [
+            {
+              "name": "Diagnose rendering bottleneck",
+              "completed": false
+            },
+            {
+              "name": "Lazy load stats chart widgets",
+              "completed": false
+            },
+            {
+              "name": "Throttle network update calls",
+              "completed": false
+            }
+          ]
+        },
+        {
+          "id": "03",
+          "title": "Write customer update notice text",
+          "duration": 20,
+          "priority": "Medium",
+          "approved": false,
+          "subtasks": [
+            {
+              "name": "Compile release highlight cards",
+              "completed": false
+            },
+            {
+              "name": "Proofread marketing text",
+              "completed": false
+            }
+          ]
+        }
+      ],
+      "rewards": {
+        "xp": 2480,
+        "coins": 240,
+        "streak": 5,
+        "streakDays": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          false
+        ],
+        "achievements": [
+          "badge-streak",
+          "badge-power",
+          "badge-sharp",
+          "badge-early",
+          "badge-centurion"
+        ],
+        "history": [
+          {
+            "id": "h-1",
+            "text": "Streak starter badge unlocked",
+            "xp": 100,
+            "coins": 20,
+            "timestamp": "2026-08-21T19:59:16.901Z"
+          },
+          {
+            "id": "h-2",
+            "text": "Sprint 1 completed focus block",
+            "xp": 40,
+            "coins": 10,
+            "timestamp": "2026-08-21T19:59:16.901Z"
+          }
+        ]
+      },
+      "planner": {
+        "timeline": [
+          {
+            "id": "tl-01",
+            "title": "OAuth setup (Sprint 1)",
+            "duration": 25,
+            "type": "sprint",
+            "completed": true,
+            "sprintId": "01"
+          },
+          {
+            "id": "tl-02",
+            "title": "Short Rest",
+            "duration": 5,
+            "type": "short_break",
+            "completed": true
+          },
+          {
+            "id": "tl-03",
+            "title": "Optimize widgets (Sprint 2)",
+            "duration": 30,
+            "type": "sprint",
+            "completed": false,
+            "sprintId": "02"
+          },
+          {
+            "id": "tl-04",
+            "title": "Short Rest",
+            "duration": 5,
+            "type": "short_break",
+            "completed": false
+          },
+          {
+            "id": "tl-05",
+            "title": "Draft notice (Sprint 3)",
+            "duration": 20,
+            "type": "sprint",
+            "completed": false,
+            "sprintId": "03"
+          },
+          {
+            "id": "tl-06",
+            "title": "Long Break",
+            "duration": 15,
+            "type": "long_break",
+            "completed": false
+          }
+        ],
+        "completedSprintsCount": 1
+      },
+      "subscription": {
+        "plan": "Free",
+        "status": "none",
+        "period": "none",
+        "reminderEnabled": true,
+        "history": []
+      }
     }
   ],
   "sessions": [
@@ -1160,11 +1870,6 @@
       "token": "sess_iz8md9beet07hhetslgq3n",
       "userId": "vcvq81z",
       "expiresAt": "2026-08-21T16:56:01.289Z"
-    },
-    {
-      "token": "sess_wnro3ab5oqgx2z5eeu3dxo",
-      "userId": "xmmd3zb",
-      "expiresAt": "2026-08-21T17:04:54.874Z"
     },
     {
       "token": "sess_py6g8dzwsnlvcu2wso0ch",
@@ -1182,9 +1887,14 @@
       "expiresAt": "2026-08-22T08:19:27.139Z"
     },
     {
-      "token": "sess_5h4sjo97qkbgb4a82yhlgc",
-      "userId": "97jzg8b",
-      "expiresAt": "2026-08-22T11:49:30.078Z"
+      "token": "sess_0plr9szv9okd4wg648juw",
+      "userId": "svollcc",
+      "expiresAt": "2026-08-25T02:48:00.871Z"
+    },
+    {
+      "token": "sess_f62vhgvpk7x56x04vqb7",
+      "userId": "wm8u7e3",
+      "expiresAt": "2026-08-28T19:59:16.902Z"
     }
   ]
 }

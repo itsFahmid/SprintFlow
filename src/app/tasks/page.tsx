@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import SprintEditModal, { EditableSprint } from "@/components/SprintEditModal";
+import NotificationCenter from "@/components/NotificationCenter";
+import TaskDetailDrawer, { TaskDetailData } from "@/components/TaskDetailDrawer";
 
 // --- SVG NAVIGATION & ACTION ICONS ---
 const DashboardIcon = () => (
@@ -56,9 +59,16 @@ const AnalyticsIcon = () => (
 );
 
 const SettingsIcon = () => (
-  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
+  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className="text-slate-400 hover:text-slate-600 transition-colors">
     <circle cx="12" cy="12" r="3"></circle>
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
   </svg>
 );
 
@@ -108,20 +118,51 @@ export default function TasksPage() {
   const router = useRouter();
 
   // --- STATE ---
-  const [viewState, setViewState] = useState<"input" | "loading" | "breakdown">("input");
+  const [viewState, setViewState] = useState<"workspace" | "input" | "loading" | "error" | "breakdown">("workspace");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [taskText, setTaskText] = useState(
     `- Implement OAuth login flow with Google + email\n- Fix dashboard loading bug on slow connections\n- Write Q3 product update email to customers\n- Review Sara's PR #218 and leave comments\n- Design onboarding empty states + illustrations\n- Plan next sprint and groom the backlog`
   );
+
+  // Screen 43 Workspace States
+  const [workspaceFilter, setWorkspaceFilter] = useState<"all" | "todo" | "scheduled" | "done">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isInFocusOpen, setIsInFocusOpen] = useState(true);
+  const [isBacklogOpen, setIsBacklogOpen] = useState(true);
+  const [selectedTaskDetail, setSelectedTaskDetail] = useState<TaskDetailData | null>(null);
+
+  const [inFocusTasks, setInFocusTasks] = useState([
+    { id: "f-1", title: "Implement OAuth login flow", duration: 25, sprints: 1, due: "Due today", priority: "High", sprintTag: "Sprint 1", completed: false },
+    { id: "f-2", title: "Debug dashboard slow-load", duration: 30, sprints: 1, due: "Due today", priority: "High", sprintTag: "Sprint 2", completed: false },
+    { id: "f-3", title: "Write Q3 product update email", duration: 20, sprints: 1, priority: "Medium", sprintTag: "Sprint 3", completed: false }
+  ]);
+
+  const [backlogTasks, setBacklogTasks] = useState([
+    { id: "b-1", title: "Review Sara's PR #218", duration: 15, sprints: 1, priority: "Medium", completed: false },
+    { id: "b-2", title: "Design onboarding empty states", duration: 30, sprints: 1, priority: "Low", completed: false },
+    { id: "b-3", title: "Plan next sprint & groom backlog", duration: 20, sprints: 1, priority: "Low", completed: false },
+    { id: "b-4", title: "Refactor timer state machine", duration: 45, sprints: 2, priority: "Medium", completed: false },
+    { id: "b-5", title: "Write release notes for v2.1", duration: 15, sprints: 1, priority: "Low", completed: false }
+  ]);
 
   // AI API Configuration Key States
   const [apiKey, setApiKey] = useState("");
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [tempApiKey, setTempApiKey] = useState("");
 
+  // Loading & Error States (Screen 29 & 30)
+  const [loadingStep, setLoadingStep] = useState<number>(1);
+  const [loadingProgress, setLoadingProgress] = useState<number>(25);
+  const [parsedLoadingTasks, setParsedLoadingTasks] = useState<ParsedTask[]>([]);
+  const [aiError, setAiError] = useState<{ code: string; message: string; details?: string }>({
+    code: "Error AI-503 · model timed out",
+    message: "We couldn't build your plan"
+  });
+
   // Dynamic analysis lists
   const [aiTasks, setAiTasks] = useState<ParsedTask[]>([]);
   const [sprints, setSprints] = useState<BreakdownSprint[]>([]);
+  const [editingSprint, setEditingSprint] = useState<EditableSprint | null>(null);
 
   const [userName, setUserName] = useState("Fahim Siddique");
   const [loading, setLoading] = useState(true);
@@ -176,7 +217,14 @@ export default function TasksPage() {
     initPage();
   }, []);
 
-  // Derived tasks count
+  const addExampleTask = (example: string) => {
+    setTaskText(prev => {
+      const trimmed = prev.trim();
+      if (!trimmed) return `- ${example}`;
+      return `${trimmed}\n- ${example}`;
+    });
+  };
+
   const detectedTasksCount = taskText
     .split("\n")
     .map(line => line.trim())
@@ -199,6 +247,18 @@ export default function TasksPage() {
     }
   };
 
+  const handleSaveEditedSprint = async (updated: EditableSprint) => {
+    const updatedList = sprints.map(s => s.id === updated.id ? { 
+      ...s, 
+      title: updated.title,
+      duration: updated.duration,
+      priority: updated.priority,
+      subtasks: updated.subtasks
+    } : s);
+    setSprints(updatedList);
+    await saveTasksAndSprints(aiTasks, updatedList);
+  };
+
   // AI Analysis Execution
   const handleAnalyze = async (bypassKeyCheck = false) => {
     if (detectedTasksCount === 0) return;
@@ -209,9 +269,52 @@ export default function TasksPage() {
       return;
     }
 
+    // Parse tasks for immediate preview in loading and error screens
+    const parsed = taskText
+      .split("\n")
+      .map(line => line.trim().replace(/^[-*•\d.]+\s*/, ""))
+      .filter(line => line.length > 0)
+      .map((name, idx) => ({
+        name,
+        priority: (idx < 2 ? "High" : idx < 4 ? "Medium" : "Low") as "High" | "Medium" | "Low"
+      }));
+
+    const tasksToDisplay = parsed.length > 0 ? parsed : [
+      { name: "Implement OAuth login flow", priority: "High" as const },
+      { name: "Fix dashboard loading bug", priority: "High" as const },
+      { name: "Write Q3 product update email", priority: "Medium" as const },
+      { name: "Review Sara's PR #218", priority: "Medium" as const },
+      { name: "Design onboarding empty states", priority: "Low" as const },
+      { name: "Plan next sprint & groom backlog", priority: "Low" as const }
+    ];
+
+    setParsedLoadingTasks(tasksToDisplay);
+    setLoadingStep(1);
+    setLoadingProgress(25);
     setViewState("loading");
 
+    // Animate loading steps
+    const step2Timer = setTimeout(() => {
+      setLoadingStep(2);
+      setLoadingProgress(55);
+    }, 600);
+
+    const step3Timer = setTimeout(() => {
+      setLoadingStep(3);
+      setLoadingProgress(80);
+    }, 1200);
+
+    const step4Timer = setTimeout(() => {
+      setLoadingStep(4);
+      setLoadingProgress(92);
+    }, 1800);
+
     try {
+      // Test trigger error if task contains trigger_error
+      if (taskText.toLowerCase().includes("trigger_error_test")) {
+        throw new Error("model timed out");
+      }
+
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (apiKey) {
         headers["x-gemini-api-key"] = apiKey;
@@ -225,11 +328,12 @@ export default function TasksPage() {
 
       if (res.status === 401) {
         if (bypassKeyCheck) {
-          // User explicitly chose offline — go straight to fallback
-          triggerFallbackSimulation();
+          triggerFallbackSimulation(tasksToDisplay);
           return;
         }
-        // Otherwise prompt for API key
+        clearTimeout(step2Timer);
+        clearTimeout(step3Timer);
+        clearTimeout(step4Timer);
         setViewState("input");
         setShowApiKeyModal(true);
         return;
@@ -241,32 +345,57 @@ export default function TasksPage() {
       }
 
       const data = await res.json();
-
-      // Set dynamic lists
       const tasksPayload = data.tasks || [];
       const sprintsPayload = (data.sprints || []).map((s: any) => ({
         ...s,
         approved: false
       }));
 
-      setAiTasks(tasksPayload);
-      setSprints(sprintsPayload);
-      setViewState("breakdown");
-
-      await saveTasksAndSprints(tasksPayload, sprintsPayload);
+      setTimeout(async () => {
+        setLoadingProgress(100);
+        setAiTasks(tasksPayload);
+        setSprints(sprintsPayload);
+        setViewState("breakdown");
+        await saveTasksAndSprints(tasksPayload, sprintsPayload);
+      }, 500);
 
     } catch (error: any) {
-      console.warn("AI breakdown failed, using local offline simulator fallback:", error);
-      alert(`AI Analysis failed: ${error.message || "Unknown error"}. Falling back to simulated offline planner.`);
-      triggerFallbackSimulation();
+      clearTimeout(step2Timer);
+      clearTimeout(step3Timer);
+      clearTimeout(step4Timer);
+      console.warn("AI breakdown error:", error);
+      setAiError({
+        code: "Error AI-503 · model timed out",
+        message: "We couldn't build your plan",
+        details: error.message || "Something went wrong while analyzing your tasks."
+      });
+      setViewState("error");
     }
   };
 
   // Offline simulation fallback logic
-  const triggerFallbackSimulation = () => {
-    // Mimic API delay before outputting standard mock breakdown
+  const triggerFallbackSimulation = (tasksToUse = parsedLoadingTasks) => {
+    setLoadingStep(1);
+    setLoadingProgress(25);
+    setViewState("loading");
+
+    setTimeout(() => {
+      setLoadingStep(2);
+      setLoadingProgress(55);
+    }, 600);
+
+    setTimeout(() => {
+      setLoadingStep(3);
+      setLoadingProgress(80);
+    }, 1200);
+
+    setTimeout(() => {
+      setLoadingStep(4);
+      setLoadingProgress(95);
+    }, 1800);
+
     setTimeout(async () => {
-      const mockTasks: ParsedTask[] = [
+      const mockTasks: ParsedTask[] = tasksToUse.length > 0 ? tasksToUse : [
         { name: "Implement OAuth login flow", priority: "High" },
         { name: "Fix dashboard loading bug", priority: "High" },
         { name: "Write Q3 product update email", priority: "Medium" },
@@ -301,12 +430,13 @@ export default function TasksPage() {
         }
       ];
 
+      setLoadingProgress(100);
       setAiTasks(mockTasks);
       setSprints(mockSprints);
       setViewState("breakdown");
 
       await saveTasksAndSprints(mockTasks, mockSprints);
-    }, 1400);
+    }, 2200);
   };
 
   const handleSaveApiKey = async () => {
@@ -433,7 +563,7 @@ export default function TasksPage() {
         <p className="text-[11px] leading-normal text-white/80 mb-4">
           Unlock AI deep-planning & insights.
         </p>
-        <Link href="/signup" className="block w-full bg-white text-[#7c3aed] hover:bg-slate-50 font-semibold py-2 px-4 rounded-xl text-center text-xs shadow-sm transition-colors">
+        <Link href="/pricing" className="block w-full bg-white text-[#7c3aed] hover:bg-slate-50 font-semibold py-2 px-4 rounded-xl text-center text-xs shadow-sm transition-colors">
           Upgrade
         </Link>
       </div>
@@ -446,11 +576,13 @@ export default function TasksPage() {
           </div>
           <div>
             <h5 className="font-semibold text-sm text-slate-900 leading-tight">{userName}</h5>
-            <p className="text-[11px] text-slate-400 mt-0.5">Level 12 • Pro</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Level 1 · Free</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <SettingsIcon />
+          <Link href="/settings" className="p-1 rounded-lg hover:bg-slate-100 transition-colors" title="Settings">
+            <SettingsIcon />
+          </Link>
           <button onClick={handleLogout} className="p-1 rounded-lg hover:bg-red-50 transition-colors group" aria-label="Log out" title="Log out">
             <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className="text-slate-400 group-hover:text-red-500 transition-colors">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -541,6 +673,12 @@ export default function TasksPage() {
               </svg>
             </button>
             
+            {viewState === "workspace" && (
+              <div>
+                <h1 className="font-heading font-extrabold text-lg md:text-xl text-slate-900 leading-tight">Tasks</h1>
+                <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 font-medium">Plan, prioritize and track everything on your plate</p>
+              </div>
+            )}
             {viewState === "input" && (
               <div>
                 <h1 className="font-heading font-extrabold text-lg md:text-xl text-slate-900 leading-tight">New Tasks</h1>
@@ -549,8 +687,14 @@ export default function TasksPage() {
             )}
             {viewState === "loading" && (
               <div>
-                <h1 className="font-heading font-extrabold text-lg md:text-xl text-slate-900 leading-tight">AI Planning Underway</h1>
-                <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 font-medium">Analyzing efforts, priorities, and Pomodoro structures...</p>
+                <h1 className="font-heading font-extrabold text-lg md:text-xl text-slate-900 leading-tight">AI Sprint Breakdown</h1>
+                <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 font-medium">Analyzing your tasks...</p>
+              </div>
+            )}
+            {viewState === "error" && (
+              <div>
+                <h1 className="font-heading font-extrabold text-lg md:text-xl text-slate-900 leading-tight">AI Sprint Breakdown</h1>
+                <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 font-medium">Something needs your attention</p>
               </div>
             )}
             {viewState === "breakdown" && (
@@ -561,36 +705,314 @@ export default function TasksPage() {
             )}
           </div>
 
-          {viewState === "breakdown" && (
-            <div className="flex items-center gap-3">
-              <button 
-                className="h-10 px-4 border border-slate-200 rounded-xl text-xs md:text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2 cursor-pointer"
-                onClick={() => { setViewState("input"); }}
+          <div className="flex items-center gap-3">
+            {viewState === "workspace" && (
+              <button
+                onClick={() => setViewState("input")}
+                className="h-10 px-4 md:px-5 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl text-xs md:text-sm font-bold flex items-center gap-1.5 shadow-md shadow-purple-500/20 transition-all cursor-pointer"
               >
-                Regenerate all
+                <span className="text-base font-bold leading-none">+</span>
+                <span>Add tasks</span>
               </button>
-              <button 
-                className="btn btn-primary h-10 px-4 md:px-5 text-xs md:text-sm font-bold gap-2"
-                onClick={handleGeneratePlan}
+            )}
+
+            {viewState === "input" && (
+              <button
+                onClick={() => setViewState("workspace")}
+                className="h-10 px-4 border border-slate-200 rounded-xl text-xs md:text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer"
               >
-                Generate Daily Plan
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                <span>←</span>
+                <span>Back to tasks</span>
               </button>
-            </div>
-          )}
+            )}
+
+            <NotificationCenter />
+            
+            {viewState === "breakdown" && (
+              <>
+                <button 
+                  className="h-10 px-4 border border-slate-200 rounded-xl text-xs md:text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2 cursor-pointer"
+                  onClick={() => { setViewState("input"); }}
+                >
+                  Regenerate all
+                </button>
+                <button 
+                  className="btn btn-primary h-10 px-4 md:px-5 text-xs md:text-sm font-bold gap-2"
+                  onClick={handleGeneratePlan}
+                >
+                  Generate Daily Plan
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </button>
+              </>
+            )}
+          </div>
         </header>
 
         {/* Content Area */}
         <div className="p-6 md:p-8 max-w-[1400px] w-full mx-auto flex-1 flex flex-col justify-start">
           
-          {/* --- STATE 1: TASK INPUT VIEW --- */}
+          {/* ========================================================================= */}
+          {/* --- STATE 0: SCREEN 43 · TASKS WORKSPACE --- */}
+          {/* ========================================================================= */}
+          {viewState === "workspace" && (
+            <div className="space-y-6 w-full animate-fade-in">
+              
+              {/* Search & Filter Bar */}
+              <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+                
+                {/* Search Input */}
+                <div className="relative flex-1 max-w-md">
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <SearchIcon />
+                  </span>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search tasks..."
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs md:text-sm font-medium focus:outline-none focus:border-[#7c3aed] focus:ring-2 focus:ring-purple-100 transition-all placeholder:text-slate-400"
+                  />
+                </div>
+
+                {/* Filter Pills & Actions */}
+                <div className="flex items-center gap-3 overflow-x-auto pb-1 md:pb-0">
+                  <div className="flex items-center bg-white border border-slate-200/80 p-1 rounded-2xl shadow-sm text-xs font-bold shrink-0">
+                    {(["all", "todo", "scheduled", "done"] as const).map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setWorkspaceFilter(tab)}
+                        className={`px-3 py-1.5 rounded-xl capitalize transition-all cursor-pointer ${
+                          workspaceFilter === tab
+                            ? "bg-[#7c3aed] text-white shadow-sm"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
+                      >
+                        {tab === "todo" ? "To do" : tab}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button 
+                    onClick={() => alert("Sorting by priority and due date.")}
+                    className="px-3.5 py-2 bg-white border border-slate-200 rounded-2xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer shrink-0"
+                  >
+                    <span>⇅</span>
+                    <span>Sort</span>
+                  </button>
+
+                  <button 
+                    onClick={() => alert("Filter options opened.")}
+                    className="px-3.5 py-2 bg-white border border-slate-200 rounded-2xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer shrink-0"
+                  >
+                    <span>⚙</span>
+                    <span>Filter</span>
+                  </button>
+                </div>
+
+              </div>
+
+              {/* Section 1: In Focus Today */}
+              <div className="bg-white border border-slate-200/60 rounded-3xl p-6 shadow-sm space-y-4">
+                <div 
+                  className="flex items-center justify-between cursor-pointer select-none"
+                  onClick={() => setIsInFocusOpen(!isInFocusOpen)}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <h3 className="font-heading font-extrabold text-sm md:text-base text-slate-900">In focus today</h3>
+                    <span className="w-6 h-6 rounded-full bg-purple-50 text-[#7c3aed] font-extrabold text-xs flex items-center justify-center">
+                      {inFocusTasks.length}
+                    </span>
+                  </div>
+                  <span className={`text-slate-400 text-sm transition-transform duration-200 ${isInFocusOpen ? "rotate-0" : "-rotate-90"}`}>
+                    ⌄
+                  </span>
+                </div>
+
+                {isInFocusOpen && (
+                  <div className="divide-y divide-slate-100 space-y-1">
+                    {inFocusTasks
+                      .filter(t => !searchQuery || t.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .map((task) => (
+                        <div 
+                          key={task.id} 
+                          className="pt-3 pb-3 flex items-center justify-between gap-4 group hover:bg-slate-50/50 -mx-3 px-3 rounded-2xl transition-colors"
+                        >
+                          <div className="flex items-center gap-3.5 flex-1 min-w-0">
+                            <span className="text-slate-300 group-hover:text-slate-400 select-none cursor-grab text-xs font-mono">⠿</span>
+                            <input
+                              type="checkbox"
+                              checked={task.completed}
+                              onChange={() => {
+                                setInFocusTasks(inFocusTasks.map(t => t.id === task.id ? { ...t, completed: !t.completed } : t));
+                              }}
+                              className="rounded border-slate-300 text-[#7c3aed] focus:ring-[#7c3aed] w-4 h-4 cursor-pointer"
+                            />
+                            <div 
+                              className="min-w-0 flex-1 cursor-pointer"
+                              onClick={() => setSelectedTaskDetail({
+                                id: task.id,
+                                title: task.title,
+                                description: "Add Google OAuth and email/password sign-in. Configure the OAuth client, wire up redirect routes, and add a fallback for users without a Google account.",
+                                priority: task.priority as any,
+                                estimate: `${task.duration} min · ${task.sprints} sprint`,
+                                dueDate: task.due || "Today, Jun 27",
+                                sprintTag: task.sprintTag,
+                                listName: "In Focus Today",
+                                tags: ["auth", "backend"],
+                                subtasks: [
+                                  { id: "st-1", name: "Configure Google OAuth client", completed: true },
+                                  { id: "st-2", name: "Add email/password fallback", completed: false },
+                                  { id: "st-3", name: "Wire up redirect routes", completed: false }
+                                ],
+                                activity: [
+                                  { text: "You created this task", time: "2 days ago" },
+                                  { text: "Scheduled to today", time: "Yesterday" },
+                                  { text: "Edited the description", time: "3h ago" }
+                                ]
+                              })}
+                            >
+                              <h4 className={`font-semibold text-xs md:text-sm text-slate-800 leading-snug truncate hover:text-[#7c3aed] transition-colors ${task.completed ? "line-through text-slate-400" : ""}`}>
+                                {task.title}
+                              </h4>
+                              <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5 font-medium">
+                                <span>{task.duration} min · {task.sprints} sprint</span>
+                                {task.due && (
+                                  <>
+                                    <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                                    <span className="text-purple-600 font-semibold">{task.due}</span>
+                                  </>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2.5 shrink-0">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 border ${
+                              task.priority === "High" ? "bg-red-50 text-red-600 border-red-200/80" : "bg-amber-50 text-amber-600 border-amber-200/80"
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${task.priority === "High" ? "bg-red-500" : "bg-amber-500"}`}></span>
+                              <span>{task.priority}</span>
+                            </span>
+
+                            <span className="px-2.5 py-1 rounded-full bg-purple-50 text-[#7c3aed] border border-purple-100 text-[10px] font-bold flex items-center gap-1">
+                              <span>⚡</span>
+                              <span>{task.sprintTag}</span>
+                            </span>
+
+                            <button 
+                              onClick={() => alert(`Task options: ${task.title}`)}
+                              className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                            >
+                              ⋮
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Section 2: Backlog */}
+              <div className="bg-white border border-slate-200/60 rounded-3xl p-6 shadow-sm space-y-4">
+                <div 
+                  className="flex items-center justify-between cursor-pointer select-none"
+                  onClick={() => setIsBacklogOpen(!isBacklogOpen)}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <h3 className="font-heading font-extrabold text-sm md:text-base text-slate-900">Backlog</h3>
+                    <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 font-extrabold text-xs flex items-center justify-center">
+                      {backlogTasks.length}
+                    </span>
+                  </div>
+                  <span className={`text-slate-400 text-sm transition-transform duration-200 ${isBacklogOpen ? "rotate-0" : "-rotate-90"}`}>
+                    ⌄
+                  </span>
+                </div>
+
+                {isBacklogOpen && (
+                  <div className="divide-y divide-slate-100 space-y-1">
+                    {backlogTasks
+                      .filter(t => !searchQuery || t.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .map((task) => (
+                        <div 
+                          key={task.id} 
+                          className="pt-3 pb-3 flex items-center justify-between gap-4 group hover:bg-slate-50/50 -mx-3 px-3 rounded-2xl transition-colors"
+                        >
+                          <div className="flex items-center gap-3.5 flex-1 min-w-0">
+                            <span className="text-slate-300 group-hover:text-slate-400 select-none cursor-grab text-xs font-mono">⠿</span>
+                            <input
+                              type="checkbox"
+                              checked={task.completed}
+                              onChange={() => {
+                                setBacklogTasks(backlogTasks.map(t => t.id === task.id ? { ...t, completed: !t.completed } : t));
+                              }}
+                              className="rounded border-slate-300 text-[#7c3aed] focus:ring-[#7c3aed] w-4 h-4 cursor-pointer"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <h4 className={`font-semibold text-xs md:text-sm text-slate-800 leading-snug truncate ${task.completed ? "line-through text-slate-400" : ""}`}>
+                                {task.title}
+                              </h4>
+                              <p className="text-[11px] text-slate-400 mt-0.5 font-medium">
+                                {task.duration} min · {task.sprints} sprint{task.sprints > 1 ? "s" : ""}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2.5 shrink-0">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 border ${
+                              task.priority === "Medium" ? "bg-amber-50 text-amber-600 border-amber-200/80" : "bg-emerald-50 text-emerald-600 border-emerald-200/80"
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${task.priority === "Medium" ? "bg-amber-500" : "bg-emerald-500"}`}></span>
+                              <span>{task.priority}</span>
+                            </span>
+
+                            <button 
+                              onClick={() => {
+                                setInFocusTasks([...inFocusTasks, {
+                                  id: `f-${Date.now()}`,
+                                  title: task.title,
+                                  duration: task.duration,
+                                  sprints: task.sprints,
+                                  due: "Due today",
+                                  priority: task.priority as any,
+                                  sprintTag: `Sprint ${inFocusTasks.length + 1}`,
+                                  completed: false
+                                }]);
+                                setBacklogTasks(backlogTasks.filter(b => b.id !== task.id));
+                              }}
+                              className="px-3 py-1 bg-slate-100 hover:bg-purple-50 hover:text-[#7c3aed] text-slate-600 rounded-xl text-[11px] font-bold transition-colors cursor-pointer flex items-center gap-1"
+                            >
+                              <span>+</span>
+                              <span>Add to plan</span>
+                            </button>
+
+                            <button 
+                              onClick={() => alert(`Task options: ${task.title}`)}
+                              className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                            >
+                              ⋮
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+          )}
+          
+          {/* --- STATE 1: TASK INPUT VIEW (SCREEN 18 · EMPTY TASK INPUT) --- */}
           {viewState === "input" && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start w-full animate-fade-in">
               
               <div className="lg:col-span-8 bg-white border border-slate-200/50 rounded-3xl p-6 md:p-8 space-y-6">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#7c3aed] flex items-center justify-center shrink-0">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
                   </div>
                   <div>
                     <h2 className="font-heading font-extrabold text-lg text-slate-900 leading-tight">Paste your tasks</h2>
@@ -598,56 +1020,93 @@ export default function TasksPage() {
                   </div>
                 </div>
 
-                <div className="relative">
+                {/* Dashed Input Container */}
+                <div className="relative min-h-[260px] bg-slate-50/40 border-2 border-dashed border-slate-200/90 rounded-2xl p-4 transition-all focus-within:border-[#7c3aed] focus-within:bg-white flex flex-col justify-center">
+                  
+                  {/* Empty Placeholder Illustration */}
+                  {!taskText.trim() && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 pointer-events-none select-none">
+                      <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200/80 text-slate-400 flex items-center justify-center mb-3 shadow-sm">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                          <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                        </svg>
+                      </div>
+                      <h4 className="font-semibold text-sm text-slate-800 leading-tight">Your tasks will appear here</h4>
+                      <p className="text-xs text-slate-400 mt-1 font-medium max-w-sm">
+                        Paste a list, type a task, or tap an example below to start.
+                      </p>
+                    </div>
+                  )}
+
                   <textarea
-                    className="w-full h-72 p-6 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#7c3aed] focus:bg-white focus:ring-2 focus:ring-purple-100 transition-all font-mono leading-relaxed resize-none"
+                    className="w-full h-64 bg-transparent text-sm placeholder:text-transparent focus:outline-none transition-all font-mono leading-relaxed resize-none relative z-10 p-2"
                     value={taskText}
                     onChange={(e) => setTaskText(e.target.value)}
-                    placeholder="- Task 1&#10;- Task 2"
+                    placeholder="Enter tasks here..."
                   ></textarea>
+
                 </div>
 
-                <div className="flex flex-wrap gap-2 text-xs">
-                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-green-50 border border-green-200/30 text-green-600 font-bold animate-pulse">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                    {detectedTasksCount} tasks detected
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-100 border border-slate-200/20 text-slate-500 font-semibold">
-                    ⏱ Sprint length: 25 min
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-100 border border-slate-200/20 text-slate-500 font-semibold">
-                    ⚡ Priority: Auto
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                  <div className="flex items-center gap-3">
-                    <button 
-                      className="btn btn-primary h-12 px-8 text-sm font-bold gap-2"
-                      onClick={() => handleAnalyze(false)}
-                      disabled={detectedTasksCount === 0}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
-                      Analyze Tasks
-                    </button>
-                    {apiKey && (
-                      <button 
-                        className="text-xs text-slate-400 hover:text-slate-600 font-semibold px-2 py-1 transition-colors"
-                        onClick={() => setShowApiKeyModal(true)}
+                {/* Try an Example Section */}
+                <div className="space-y-2.5">
+                  <span className="block text-xs font-semibold text-slate-600">Try an example</span>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      "Write the Q3 update email",
+                      "Review Sara's PR #218",
+                      "Fix dashboard loading bug",
+                      "Plan next sprint"
+                    ].map((example, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => addExampleTask(example)}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-purple-50 hover:border-purple-200 border border-slate-200/80 rounded-full text-xs font-medium text-slate-700 hover:text-[#7c3aed] transition-all cursor-pointer shadow-sm"
                       >
-                        ⚙ Change API Key
+                        <span className="text-[#7c3aed] font-bold">+</span>
+                        <span>{example}</span>
                       </button>
-                    )}
+                    ))}
                   </div>
+                </div>
+
+                {/* Analysis Button */}
+                <div className="pt-2">
                   <button 
-                    className="h-12 px-6 border border-slate-200 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
-                    onClick={() => setTaskText("")}
+                    className={`w-full h-12 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+                      detectedTasksCount === 0
+                        ? "bg-slate-100 border border-slate-200/80 text-slate-400 cursor-not-allowed"
+                        : "btn btn-primary bg-[#7c3aed] hover:bg-[#6d28d9] text-white shadow-lg shadow-purple-500/20"
+                    }`}
+                    onClick={() => handleAnalyze(false)}
+                    disabled={detectedTasksCount === 0}
                   >
-                    Clear
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Analyze Tasks
                   </button>
+                  {detectedTasksCount === 0 && (
+                    <p className="text-xs text-slate-400 mt-2 text-left font-medium">
+                      Add at least one task to continue.
+                    </p>
+                  )}
+                  {detectedTasksCount > 0 && (
+                    <div className="flex items-center justify-between mt-3 text-xs text-slate-400">
+                      <span className="font-semibold text-green-600">✓ {detectedTasksCount} tasks detected</span>
+                      <button 
+                        className="text-slate-400 hover:text-slate-600 font-semibold cursor-pointer"
+                        onClick={() => setTaskText("")}
+                      >
+                        Clear list
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
+              {/* Right Column: How it works */}
               <div className="lg:col-span-4 bg-white border border-slate-200/50 rounded-3xl p-6 md:p-8 space-y-6">
                 <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider">How it works</h3>
                 
@@ -678,28 +1137,224 @@ export default function TasksPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-sm text-slate-900 leading-tight">You stay in control</h4>
-                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">Edit, approve, or regenerate any sprint.</p>
+                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">Edit, approve or regenerate any sprint.</p>
                     </div>
                   </div>
-                </div>
-
-                <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 flex items-center gap-3 text-purple-600 text-xs font-semibold">
-                  <span>⚡</span>
-                  Avg. plan ready in ~3 seconds
                 </div>
               </div>
 
             </div>
           )}
 
-          {/* --- STATE 2: LOADING ANALYZER STATE --- */}
+          {/* ========================================================================= */}
+          {/* --- STATE 2: SCREEN 29 · AI LOADING STATE --- */}
+          {/* ========================================================================= */}
           {viewState === "loading" && (
-            <div className="flex-1 flex flex-col items-center justify-center py-20 w-full animate-pulse">
-              <div className="w-16 h-16 border-4 border-purple-100 border-t-[#7c3aed] rounded-full animate-spin mb-6"></div>
-              <h2 className="font-heading font-extrabold text-lg text-slate-900 mb-2">Analyzing your tasks...</h2>
-              <p className="text-sm text-slate-400 font-medium max-w-sm text-center leading-relaxed">
-                Calling Google Gemini models to categorize complexity, compute sprint energy distributions, and group task blocks...
-              </p>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start w-full animate-fade-in">
+              
+              {/* Left Column: Your Tasks card */}
+              <div className="lg:col-span-5 bg-white border border-slate-200/60 rounded-3xl p-6 md:p-8 space-y-6 shadow-sm">
+                <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider">Your tasks</h3>
+                
+                <ul className="space-y-4 list-none p-0 text-xs md:text-sm">
+                  {parsedLoadingTasks.map((task, idx) => (
+                    <li key={idx} className="flex items-center gap-3">
+                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                        task.priority === "High" ? "bg-red-500" :
+                        task.priority === "Medium" ? "bg-amber-500" : "bg-emerald-500"
+                      }`}></span>
+                      <span className="font-medium text-slate-800">{task.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Right Column: AI Progress Hero + Step Badges + Skeletons */}
+              <div className="lg:col-span-7 space-y-6">
+                
+                {/* Purple Hero Card */}
+                <div className="bg-[#4f46e5] rounded-3xl p-6 md:p-8 text-white relative overflow-hidden shadow-lg shadow-indigo-500/20">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl shrink-0 backdrop-blur-sm border border-white/30">
+                      ✨
+                    </div>
+                    <div className="space-y-1.5 flex-1">
+                      <h3 className="font-heading font-extrabold text-base md:text-lg leading-tight">Building your focus plan...</h3>
+                      <p className="text-xs text-white/80 leading-relaxed max-w-lg">
+                        SprintFlow is reading your {parsedLoadingTasks.length || 6} tasks and grouping them into focus sprints. This usually takes a few seconds.
+                      </p>
+                      
+                      {/* Animated Progress Bar */}
+                      <div className="pt-3">
+                        <div className="w-full h-2 bg-black/20 rounded-full overflow-hidden p-0.5">
+                          <div 
+                            className="h-full bg-white rounded-full transition-all duration-500 shadow-sm"
+                            style={{ width: `${loadingProgress}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step Status Badges */}
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <div className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 border transition-all ${
+                    loadingStep >= 1 ? "bg-white text-emerald-700 border-emerald-200 shadow-sm" : "bg-slate-100 text-slate-400 border-slate-200"
+                  }`}>
+                    <span>✓</span>
+                    <span>Reading tasks</span>
+                  </div>
+
+                  <div className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 border transition-all ${
+                    loadingStep === 2 ? "bg-purple-50 text-[#7c3aed] border-purple-200 shadow-sm" :
+                    loadingStep > 2 ? "bg-white text-emerald-700 border-emerald-200 shadow-sm" :
+                    "bg-white text-slate-600 border-slate-200"
+                  }`}>
+                    {loadingStep === 2 ? (
+                      <span className="animate-spin text-sm">⟳</span>
+                    ) : loadingStep > 2 ? (
+                      <span>✓</span>
+                    ) : (
+                      <span className="text-slate-400">✦</span>
+                    )}
+                    <span>Estimating effort</span>
+                  </div>
+
+                  <div className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 border transition-all ${
+                    loadingStep === 3 ? "bg-purple-50 text-[#7c3aed] border-purple-200 shadow-sm" :
+                    loadingStep > 3 ? "bg-white text-emerald-700 border-emerald-200 shadow-sm" :
+                    "bg-white text-slate-400 border-slate-200/80"
+                  }`}>
+                    {loadingStep === 3 ? (
+                      <span className="animate-spin text-sm">⟳</span>
+                    ) : loadingStep > 3 ? (
+                      <span>✓</span>
+                    ) : (
+                      <span className="text-slate-400">✦</span>
+                    )}
+                    <span>Grouping sprints</span>
+                  </div>
+
+                  <div className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 border transition-all ${
+                    loadingStep === 4 ? "bg-purple-50 text-[#7c3aed] border-purple-200 shadow-sm" :
+                    "bg-white text-slate-400 border-slate-200/80"
+                  }`}>
+                    {loadingStep === 4 ? (
+                      <span className="animate-spin text-sm">⟳</span>
+                    ) : (
+                      <span className="text-slate-400">✦</span>
+                    )}
+                    <span>Ordering your day</span>
+                  </div>
+                </div>
+
+                {/* 3 Skeleton Cards */}
+                <div className="space-y-4">
+                  {[1, 2, 3].map((cardIdx) => (
+                    <div key={cardIdx} className="bg-white border border-slate-200/60 rounded-3xl p-6 space-y-4 shadow-sm animate-pulse">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-2xl bg-slate-100"></div>
+                          <div className="space-y-1.5">
+                            <div className="h-4 bg-slate-100 rounded-md w-48"></div>
+                            <div className="h-3 bg-red-100/60 rounded-full w-14"></div>
+                          </div>
+                        </div>
+                        <div className="h-8 w-20 bg-slate-100 rounded-xl"></div>
+                      </div>
+
+                      <div className="space-y-2.5 pt-2 pl-2">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-2 h-2 rounded-full bg-slate-200"></div>
+                          <div className="h-3 bg-slate-100 rounded-md w-3/4"></div>
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-2 h-2 rounded-full bg-slate-200"></div>
+                          <div className="h-3 bg-slate-100 rounded-md w-5/6"></div>
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-2 h-2 rounded-full bg-slate-200"></div>
+                          <div className="h-3 bg-slate-100 rounded-md w-1/2"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+              </div>
+
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* --- STATE 3: SCREEN 30 · AI ERROR STATE --- */}
+          {/* ========================================================================= */}
+          {viewState === "error" && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start w-full animate-fade-in">
+              
+              {/* Left Column: Your Tasks card */}
+              <div className="lg:col-span-5 bg-white border border-slate-200/60 rounded-3xl p-6 md:p-8 space-y-6 shadow-sm">
+                <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider">Your tasks</h3>
+                
+                <ul className="space-y-4 list-none p-0 text-xs md:text-sm">
+                  {parsedLoadingTasks.map((task, idx) => (
+                    <li key={idx} className="flex items-center gap-3">
+                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                        task.priority === "High" ? "bg-red-500" :
+                        task.priority === "Medium" ? "bg-amber-500" : "bg-emerald-500"
+                      }`}></span>
+                      <span className="font-medium text-slate-800">{task.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Right Column: Error Card */}
+              <div className="lg:col-span-7 bg-white border border-slate-200/60 rounded-3xl p-8 md:p-14 text-center shadow-sm flex flex-col items-center justify-center space-y-6 min-h-[460px]">
+                
+                <div className="w-16 h-16 rounded-full bg-red-50 text-red-500 border border-red-100 flex items-center justify-center text-3xl shadow-sm">
+                  ⚠️
+                </div>
+
+                <div className="space-y-2 max-w-md">
+                  <h3 className="font-heading font-extrabold text-xl text-slate-900">
+                    {aiError.message || "We couldn't build your plan"}
+                  </h3>
+                  <p className="text-xs md:text-sm text-slate-500 leading-relaxed font-medium">
+                    Something went wrong while analyzing your tasks. Don't worry — your {parsedLoadingTasks.length || 6} tasks are saved. Give it another try.
+                  </p>
+                </div>
+
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-slate-100 border border-slate-200 text-slate-600 rounded-full text-xs font-mono font-semibold">
+                  <span>⚠️</span>
+                  <span>{aiError.code || "Error AI-503 · model timed out"}</span>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                  <button
+                    onClick={() => handleAnalyze(true)}
+                    className="px-6 h-11 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-purple-500/20 transition-all cursor-pointer"
+                  >
+                    <span>🔄</span>
+                    <span>Try again</span>
+                  </button>
+
+                  <button
+                    onClick={() => setViewState("input")}
+                    className="px-6 h-11 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer"
+                  >
+                    <span>✏️</span>
+                    <span>Edit tasks</span>
+                  </button>
+                </div>
+
+                <p className="text-xs text-slate-400 font-medium pt-2">
+                  Still stuck? <a href="mailto:support@sprintflow.io" className="text-[#7c3aed] hover:underline font-bold">Contact support</a>
+                </p>
+
+              </div>
+
             </div>
           )}
 
@@ -766,7 +1421,19 @@ export default function TasksPage() {
 
                         <div className="flex items-center gap-3.5">
                           <button aria-label="Refresh sprint"><RefreshIcon /></button>
-                          <button aria-label="Edit sprint"><EditIcon /></button>
+                          <button 
+                            aria-label="Edit sprint"
+                            onClick={() => setEditingSprint({
+                              id: sprint.id,
+                              title: sprint.title,
+                              duration: sprint.duration,
+                              priority: sprint.priority,
+                              subtasks: sprint.subtasks || []
+                            })}
+                            className="p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                          >
+                            <EditIcon />
+                          </button>
                           
                           <button 
                             className={`btn h-9 px-4 text-xs font-bold transition-all border ${
@@ -869,6 +1536,24 @@ export default function TasksPage() {
           </div>
         </div>
       )}
+
+      {/* --- SPRINT EDIT MODAL (SCREEN 31) --- */}
+      <SprintEditModal
+        isOpen={!!editingSprint}
+        onClose={() => setEditingSprint(null)}
+        sprint={editingSprint}
+        onSave={handleSaveEditedSprint}
+      />
+
+      {/* --- TASK DETAIL SLIDE-OVER DRAWER (SCREEN 47) --- */}
+      <TaskDetailDrawer
+        isOpen={!!selectedTaskDetail}
+        onClose={() => setSelectedTaskDetail(null)}
+        task={selectedTaskDetail}
+        onMarkComplete={(id) => {
+          setInFocusTasks(inFocusTasks.map(t => t.id === id ? { ...t, completed: true } : t));
+        }}
+      />
 
     </div>
   );

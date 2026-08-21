@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import PaywallModal from "@/components/PaywallModal";
+import NotificationCenter from "@/components/NotificationCenter";
 
 // --- SVG NAVIGATION & WIDGET ICONS ---
 const DashboardIcon = () => (
@@ -149,7 +151,9 @@ export default function DashboardPage() {
   const [isSprintActive, setIsSprintActive] = useState(false);
   const [sprintTimeRemaining, setSprintTimeRemaining] = useState(25 * 60);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showSummaryView, setShowSummaryView] = useState(false);
+  const [dashboardView, setDashboardView] = useState<"empty" | "active" | "summary">("empty");
+  const [userPlan, setUserPlan] = useState<string>("Free");
+  const [isPaywallOpen, setIsPaywallOpen] = useState(false);
 
   // Fetch me on mount
   useEffect(() => {
@@ -163,13 +167,28 @@ export default function DashboardPage() {
         const data = await res.json();
         setUserName(data.user.name);
         setUserEmail(data.user.email);
-        setTasks(data.user.tasks || []);
-        setXp(data.user.rewards.xp);
-        setCoins(data.user.rewards.coins);
-        setStreak(data.user.rewards.streak);
-        setStreakDays(data.user.rewards.streakDays || [true, true, true, true, true, false]);
-        setCompletedSprintsCount(data.user.planner.completedSprintsCount);
-        setTotalPlannedSprints(data.user.settings.dailyGoal || 5);
+        if (data.user.subscription?.plan) {
+          setUserPlan(data.user.subscription.plan);
+        }
+        const userTasks = data.user.tasks || [];
+        setTasks(userTasks);
+        setXp(data.user.rewards.xp || 0);
+        setCoins(data.user.rewards.coins || 0);
+        setStreak(data.user.rewards.streak || 0);
+        setStreakDays(data.user.rewards.streakDays || [false, false, false, false, false, false, false]);
+        const sprintCount = data.user.planner?.completedSprintsCount || 0;
+        setCompletedSprintsCount(sprintCount);
+        setTotalPlannedSprints(data.user.settings?.dailyGoal || 5);
+        
+        // If user has no tasks and no completed sprints, default to empty view
+        if (userTasks.length === 0 && sprintCount === 0) {
+          setDashboardView("empty");
+        } else if (sprintCount >= (data.user.settings?.dailyGoal || 5)) {
+          setDashboardView("summary");
+        } else {
+          setDashboardView("active");
+        }
+
         setLoading(false);
       } catch (err) {
         console.error("Fetch me error:", err);
@@ -183,14 +202,7 @@ export default function DashboardPage() {
   const baseCompletedSprints = Math.max(0, totalPlannedSprints - 2);
   const completedTasksCount = tasks.filter(t => t.completed).length;
   const currentCompletedSprints = Math.min(totalPlannedSprints, baseCompletedSprints + completedTasksCount);
-  const progressRatio = currentCompletedSprints / totalPlannedSprints;
-
-  // Auto transition to summary view if 100% sprints done (5/5)
-  useEffect(() => {
-    if (currentCompletedSprints >= totalPlannedSprints && !loading) {
-      setShowSummaryView(true);
-    }
-  }, [currentCompletedSprints, loading, totalPlannedSprints]);
+  const progressRatio = totalPlannedSprints > 0 ? currentCompletedSprints / totalPlannedSprints : 0;
 
   // SVG circular properties for active goals
   const circleCircumference = 314.16; // 2 * PI * 50 (Radius 50)
@@ -311,8 +323,8 @@ export default function DashboardPage() {
         <p className="text-[11px] leading-normal text-white/80 mb-4">
           Unlock AI deep-planning & insights.
         </p>
-        <Link href="/signup" className="block w-full bg-white text-[#7c3aed] hover:bg-slate-50 font-semibold py-2 px-4 rounded-xl text-center text-xs shadow-sm transition-colors">
-          Upgrade
+        <Link href={userPlan === "Pro" ? "/subscription" : "/pricing"} className="block w-full bg-white text-[#7c3aed] hover:bg-slate-50 font-semibold py-2 px-4 rounded-xl text-center text-xs shadow-sm transition-colors">
+          {userPlan === "Pro" ? "Manage Pro" : "Upgrade"}
         </Link>
       </div>
 
@@ -324,11 +336,15 @@ export default function DashboardPage() {
           </div>
           <div>
             <h5 className="font-semibold text-sm text-slate-900 leading-tight">{userName}</h5>
-            <p className="text-[11px] text-slate-400 mt-0.5">Level 12 • Pro</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              {userPlan === "Pro" ? "Level 12 · Pro" : "Level 1 · Free"}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <SettingsIcon />
+          <Link href="/settings" className="p-1 rounded-lg hover:bg-slate-100 transition-colors" title="Settings">
+            <SettingsIcon />
+          </Link>
           <button onClick={handleLogout} className="p-1 rounded-lg hover:bg-red-50 transition-colors group" aria-label="Log out" title="Log out">
             <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className="text-slate-400 group-hover:text-red-500 transition-colors">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -410,31 +426,64 @@ export default function DashboardPage() {
             
             <div>
               <h1 className="font-heading font-extrabold text-lg md:text-xl text-slate-900 leading-tight">
-                {showSummaryView ? "Daily Summary" : `Good morning, ${userName.split(" ")[0]} 👋`}
+                {dashboardView === "empty" 
+                  ? `Welcome, ${userName.split(" ")[0]} 👋` 
+                  : dashboardView === "summary" 
+                  ? "Daily Summary" 
+                  : `Good morning, ${userName.split(" ")[0]} 👋`}
               </h1>
               <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 font-medium">
-                {showSummaryView 
-                  ? "Saturday, June 27 · End of day recap" 
-                  : `Saturday, June 27 • You have ${totalPlannedSprints} sprints planned today`}
+                {dashboardView === "empty"
+                  ? "Let's plan your first focus day"
+                  : dashboardView === "summary" 
+                  ? "End of day recap" 
+                  : `You have ${totalPlannedSprints} sprints planned today`}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3 md:gap-4">
             
-            {/* Visual preview toggle button */}
-            <button 
-              className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
-                showSummaryView 
-                  ? "bg-purple-100 border-purple-200 text-[#7c3aed]" 
-                  : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
-              }`}
-              onClick={() => setShowSummaryView(!showSummaryView)}
-            >
-              {showSummaryView ? "👁 View Goals" : "🎉 View Recap"}
-            </button>
+            {/* View Switcher Pill */}
+            <div className="hidden sm:flex items-center bg-slate-100 p-1 rounded-xl shadow-inner text-xs font-semibold">
+              <button 
+                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                  dashboardView === "empty" ? "bg-white text-[#7c3aed] shadow-sm font-bold" : "text-slate-500 hover:text-slate-800"
+                }`}
+                onClick={() => setDashboardView("empty")}
+              >
+                Empty
+              </button>
+              <button 
+                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                  dashboardView === "active" ? "bg-white text-[#7c3aed] shadow-sm font-bold" : "text-slate-500 hover:text-slate-800"
+                }`}
+                onClick={() => setDashboardView("active")}
+              >
+                Active
+              </button>
+              <button 
+                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                  dashboardView === "summary" ? "bg-white text-[#7c3aed] shadow-sm font-bold" : "text-slate-500 hover:text-slate-800"
+                }`}
+                onClick={() => setDashboardView("summary")}
+              >
+                Recap
+              </button>
+            </div>
 
-            {showSummaryView ? (
+            {dashboardView === "empty" ? (
+              <Link 
+                href="/tasks"
+                className="btn btn-primary h-10 px-4 md:px-5 text-xs md:text-sm font-bold flex items-center gap-1.5 shadow-md shadow-purple-500/20"
+              >
+                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Add tasks</span>
+              </Link>
+            ) : dashboardView === "summary" ? (
               <button 
                 className="h-10 px-4 border border-slate-200 rounded-xl text-xs md:text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2 cursor-pointer bg-white"
                 onClick={() => alert("Daily recap shared successfully!")}
@@ -478,16 +527,222 @@ export default function DashboardPage() {
                 </button>
               </>
             )}
+
+            <NotificationCenter />
           </div>
         </header>
 
-        {/* Dashboard Grid Area */}
+        {/* Dashboard Content */}
         <div className="p-6 md:p-8 space-y-6 max-w-[1400px] w-full mx-auto">
           
-          {showSummaryView ? (
-            /* ========================================================================= */
-            /* --- STATE B: DAILY SUMMARY END-OF-DAY RECAP STATE --- */
-            /* ========================================================================= */
+          {/* ========================================================================= */}
+          {/* --- STATE 1: SCREEN 17 · EMPTY DASHBOARD --- */}
+          {/* ========================================================================= */}
+          {dashboardView === "empty" && (
+            <div className="space-y-6 animate-fade-in">
+              
+              {/* 4 Top Stat Cards */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                {/* Total XP */}
+                <div className="bg-white border border-slate-200/50 rounded-2xl p-5 hover:shadow-md transition-shadow">
+                  <div className="w-9 h-9 rounded-xl bg-purple-50 text-[#7c3aed] flex items-center justify-center mb-4">
+                    <LightningIcon />
+                  </div>
+                  <h3 className="font-heading font-extrabold text-2xl text-slate-900 leading-none">0</h3>
+                  <p className="text-xs text-slate-400 mt-2 font-medium">Total XP</p>
+                </div>
+
+                {/* Focus Time */}
+                <div className="bg-white border border-slate-200/50 rounded-2xl p-5 hover:shadow-md transition-shadow">
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
+                    <ClockOutlineIcon />
+                  </div>
+                  <h3 className="font-heading font-extrabold text-2xl text-slate-900 leading-none">0m</h3>
+                  <p className="text-xs text-slate-400 mt-2 font-medium">Focus Time</p>
+                </div>
+
+                {/* Coins */}
+                <div className="bg-white border border-slate-200/50 rounded-2xl p-5 hover:shadow-md transition-shadow">
+                  <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center mb-4">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="9"></circle>
+                      <path d="M12 7v10M9 9.5h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 0 0 3h6"></path>
+                    </svg>
+                  </div>
+                  <h3 className="font-heading font-extrabold text-2xl text-slate-900 leading-none">0</h3>
+                  <p className="text-xs text-slate-400 mt-2 font-medium">Coins</p>
+                </div>
+
+                {/* Productivity */}
+                <div className="bg-white border border-slate-200/50 rounded-2xl p-5 hover:shadow-md transition-shadow">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
+                    <TargetIcon />
+                  </div>
+                  <h3 className="font-heading font-extrabold text-2xl text-slate-900 leading-none">—</h3>
+                  <p className="text-xs text-slate-400 mt-2 font-medium">Productivity</p>
+                </div>
+
+              </div>
+
+              {/* Middle Section: No Sprints Card (Left) + Streak & Pro Tip (Right) */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                {/* Left: Dashed No Sprints Card */}
+                <div className="lg:col-span-8 bg-white border-2 border-dashed border-slate-200/80 rounded-3xl p-10 md:p-14 flex flex-col items-center justify-center text-center space-y-4 shadow-sm hover:border-purple-200 transition-colors">
+                  <div className="w-16 h-16 rounded-2xl bg-purple-50 text-[#7c3aed] flex items-center justify-center mb-1 shadow-sm">
+                    <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                      <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                      <path d="M9 12h6M9 16h6"></path>
+                    </svg>
+                  </div>
+                  
+                  <div className="space-y-2 max-w-md">
+                    <h3 className="font-heading font-extrabold text-xl text-slate-900">No sprints yet</h3>
+                    <p className="text-xs md:text-sm text-slate-500 leading-relaxed font-medium">
+                      Paste your to-do list and SprintFlow's AI will turn it into a focused Pomodoro plan in seconds.
+                    </p>
+                  </div>
+
+                  <div className="pt-2">
+                    <Link
+                      href="/tasks"
+                      className="btn btn-primary bg-[#7c3aed] hover:bg-[#6d28d9] text-white px-6 py-3 rounded-xl text-xs md:text-sm font-bold inline-flex items-center gap-2 shadow-lg shadow-purple-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                    >
+                      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>
+                      Add your tasks
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Right Column: No streak + Pro Tip */}
+                <div className="lg:col-span-4 space-y-6">
+                  
+                  {/* No streak yet */}
+                  <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                          <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"></path>
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-xs md:text-sm text-slate-800 leading-tight">No streak yet</h4>
+                        <p className="text-[11px] text-slate-400 mt-0.5">Finish a sprint to start it</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-7 gap-1.5 pt-1">
+                      {["M", "T", "W", "T", "F", "S", "S"].map((day, idx) => (
+                        <div key={idx} className="flex flex-col items-center gap-1.5">
+                          <div className="w-8 h-8 rounded-xl bg-slate-100/80 border border-slate-200/40 text-slate-300 flex items-center justify-center text-xs">
+                          </div>
+                          <span className="text-[9px] font-bold text-slate-400">{day}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Pro Tip */}
+                  <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-3">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#7c3aed] uppercase tracking-wider">
+                      <span className="w-5 h-5 rounded-lg bg-purple-50 flex items-center justify-center text-xs font-black">✦</span>
+                      Pro tip
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                      Dump everything on your mind — even rough notes. The AI is great at turning messy lists into clear, bite-sized sprints.
+                    </p>
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* Bottom: Get started in 3 steps */}
+              <div className="bg-white border border-slate-200/50 rounded-3xl p-6 md:p-8 space-y-6">
+                <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                  <h3 className="font-heading font-extrabold text-base text-slate-900">Get started in 3 steps</h3>
+                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-purple-50 text-[#7c3aed] text-xs font-bold border border-purple-100">
+                    0 of 3
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  
+                  {/* Step 1: Add your tasks */}
+                  <div className="flex items-center justify-between p-4 bg-slate-50/50 hover:bg-purple-50/30 border border-slate-200/60 rounded-2xl transition-all">
+                    <div className="flex items-center gap-4">
+                      <div className="w-8 h-8 rounded-full bg-[#7c3aed] text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                        1
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-xs md:text-sm text-slate-900 leading-tight">Add your tasks</h4>
+                        <p className="text-xs text-slate-500 mt-0.5">Paste or type today's to-dos.</p>
+                      </div>
+                    </div>
+                    
+                    <Link 
+                      href="/tasks"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl text-xs font-bold shadow-sm transition-all"
+                    >
+                      Start ➔
+                    </Link>
+                  </div>
+
+                  {/* Step 2: Review your AI plan */}
+                  <div className="flex items-center justify-between p-4 bg-slate-50/30 border border-slate-200/40 rounded-2xl opacity-70">
+                    <div className="flex items-center gap-4">
+                      <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs">
+                        2
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-xs md:text-sm text-slate-700 leading-tight">Review your AI plan</h4>
+                        <p className="text-xs text-slate-400 mt-0.5">Edit, approve & order your sprints.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="text-slate-400 p-2">
+                      <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Step 3: Complete your first sprint */}
+                  <div className="flex items-center justify-between p-4 bg-slate-50/30 border border-slate-200/40 rounded-2xl opacity-70">
+                    <div className="flex items-center gap-4">
+                      <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs">
+                        3
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-xs md:text-sm text-slate-700 leading-tight">Complete your first sprint</h4>
+                        <p className="text-xs text-slate-400 mt-0.5">Start the timer and earn your first XP.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="text-slate-400 p-2">
+                      <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                      </svg>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* --- STATE 2: DAILY SUMMARY END-OF-DAY RECAP STATE --- */}
+          {/* ========================================================================= */}
+          {dashboardView === "summary" && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-fade-in">
               
               {/* Left Column widgets */}
@@ -740,11 +995,13 @@ export default function DashboardPage() {
               </div>
 
             </div>
-          ) : (
-            /* ========================================================================= */
-            /* --- STATE A: ORIGINAL ACTIVE SPRINT/TASKS STATE --- */
-            /* ========================================================================= */
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          )}
+
+          {/* ========================================================================= */}
+          {/* --- STATE 3: ORIGINAL ACTIVE SPRINT/TASKS STATE --- */}
+          {/* ========================================================================= */}
+          {dashboardView === "active" && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-fade-in">
               
               {/* Left Grid Widgets */}
               <div className="lg:col-span-8 space-y-6">
@@ -907,6 +1164,13 @@ export default function DashboardPage() {
         </div>
 
       </main>
+
+      <PaywallModal 
+        isOpen={isPaywallOpen} 
+        onClose={() => setIsPaywallOpen(false)} 
+        usedCount={completedSprintsCount}
+        totalLimit={3}
+      />
 
     </div>
   );
