@@ -207,7 +207,7 @@ export default function PlannerPage() {
         <p className="text-[11px] leading-normal text-white/80 mb-4">
           Unlock AI deep-planning & insights.
         </p>
-        <Link href="/signup" className="block w-full bg-white text-[#7c3aed] hover:bg-slate-50 font-semibold py-2 px-4 rounded-xl text-center text-xs shadow-sm transition-colors">
+        <Link href="/pricing" className="block w-full bg-white text-[#7c3aed] hover:bg-slate-50 font-semibold py-2 px-4 rounded-xl text-center text-xs shadow-sm transition-colors">
           Upgrade
         </Link>
       </div>
@@ -220,11 +220,13 @@ export default function PlannerPage() {
           </div>
           <div>
             <h5 className="font-semibold text-sm text-slate-900 leading-tight">{userName}</h5>
-            <p className="text-[11px] text-slate-400 mt-0.5">Level 12 • Pro</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Level 1 · Free</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <SettingsIcon />
+          <Link href="/settings" className="p-1 rounded-lg hover:bg-slate-100 transition-colors" title="Settings">
+            <SettingsIcon />
+          </Link>
           <button onClick={handleLogout} className="p-1 rounded-lg hover:bg-red-50 transition-colors group" aria-label="Log out" title="Log out">
             <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className="text-slate-400 group-hover:text-red-500 transition-colors">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
