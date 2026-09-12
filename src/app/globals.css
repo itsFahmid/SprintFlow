@@ -110,8 +110,14 @@
 
 .btn-primary:hover {
   background-color: var(--primary-dark);
-  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.35);
   transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: scale(0.97) translateY(0);
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
+  transition-duration: 0.08s;
 }
 
 .btn-secondary {
@@ -1573,6 +1579,118 @@
   to {
     transform: translateX(0);
     opacity: 1;
+  }
+}
+
+/* --- OPERATE SHELL ANIMATIONS --- */
+
+/* Fade-in: used across all authenticated page transitions */
+@keyframes sf-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stat card stagger: one authored moment on dashboard mount */
+@keyframes sf-stat-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Live session dot: replaces Tailwind animate-ping for sprint active state */
+@keyframes sf-live-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.6); opacity: 0.4; }
+}
+
+/* Page-view fade-in utility used throughout the app */
+.animate-fade-in {
+  animation: sf-fade-up 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Stat card stagger — used on the 4-card row */
+.sf-stat-card {
+  animation: sf-stat-rise 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.sf-stat-card:nth-child(1) { animation-delay: 0ms; }
+.sf-stat-card:nth-child(2) { animation-delay: 55ms; }
+.sf-stat-card:nth-child(3) { animation-delay: 110ms; }
+.sf-stat-card:nth-child(4) { animation-delay: 165ms; }
+
+/* Sprint live dot */
+.sf-live-dot {
+  animation: sf-live-dot 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Sidebar nav icon: 1px slide on hover — snappy, Operate-appropriate */
+.nav-item-icon {
+  transition: transform 0.13s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-item:hover .nav-item-icon {
+  transform: translateX(1px);
+}
+
+/* --- MOTION ACCESSIBILITY --- */
+@media (prefers-reduced-motion: reduce) {
+  /* Zero spatial motion on all keyframe animations */
+  @keyframes sf-fade-up {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes sf-stat-rise {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes float {
+    0%, 100%, 50% { transform: none; }
+  }
+  @keyframes slide-in {
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes pulse-badge {
+    0%, 100%, 50% { transform: none; opacity: 1; }
+  }
+  /* Live dot: preserve state color, remove spatial pulse */
+  @keyframes sf-live-dot {
+    0%, 100%, 50% { transform: none; opacity: 1; }
+  }
+  /* Spinner: keep for loading state (it carries meaning) but slow it */
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  /* Zero hover lifts on buttons (they still change color — state is legible) */
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .btn-white:hover,
+  .btn-outline-white:hover {
+    transform: none;
+  }
+  .btn-primary:active {
+    transform: none;
+  }
+  /* Remove nav icon slide */
+  .nav-item:hover .nav-item-icon {
+    transform: none;
+  }
+  /* Remove stagger delays so cards appear immediately */
+  .sf-stat-card,
+  .sf-stat-card:nth-child(1),
+  .sf-stat-card:nth-child(2),
+  .sf-stat-card:nth-child(3),
+  .sf-stat-card:nth-child(4) {
+    animation-delay: 0ms;
+    animation-duration: 0.12s;
   }
 }
 
