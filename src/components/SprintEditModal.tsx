@@ -201,7 +201,7 @@ export default function SprintEditModal({ isOpen, onClose, sprint, onSave }: Spr
                   <button
                     type="button"
                     onClick={() => handleRemoveSubtask(idx)}
-                    className="w-6 h-6 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center text-xs transition-colors cursor-pointer"
+                    className="w-6 h-6 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 flex items-center justify-center text-xs transition-colors cursor-pointer"
                     aria-label="Remove step"
                   >
                     &times;

@@ -980,7 +980,7 @@ export default function TasksPage() {
                                 }]);
                                 setBacklogTasks(backlogTasks.filter(b => b.id !== task.id));
                               }}
-                              className="px-3 py-1 bg-slate-100 hover:bg-purple-50 hover:text-[#7c3aed] text-slate-600 rounded-xl text-[11px] font-bold transition-colors cursor-pointer flex items-center gap-1"
+                              className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl text-[11px] font-bold transition-colors cursor-pointer flex items-center gap-1"
                             >
                               <span>+</span>
                               <span>Add to plan</span>
@@ -1061,7 +1061,7 @@ export default function TasksPage() {
                         key={idx}
                         type="button"
                         onClick={() => addExampleTask(example)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-purple-50 hover:border-purple-200 border border-slate-200/80 rounded-full text-xs font-medium text-slate-700 hover:text-[#7c3aed] transition-all cursor-pointer shadow-sm"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-slate-100 border border-slate-200/80 rounded-full text-xs font-medium text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-sm"
                       >
                         <span className="text-[#7c3aed] font-bold">+</span>
                         <span>{example}</span>

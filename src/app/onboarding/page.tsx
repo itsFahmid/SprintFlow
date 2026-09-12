@@ -124,10 +124,10 @@ export default function OnboardingPage() {
   }, []);
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50/40 via-white to-purple-50/30 min-h-screen flex items-center justify-center p-6 font-sans select-none relative overflow-hidden">
+    <div className="bg-slate-50 min-h-screen flex items-center justify-center p-6 font-sans select-none relative overflow-hidden">
       
-      {/* Background Radial Glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(99,102,241,0.04),transparent_50%)] pointer-events-none"></div>
+      {/* Subtle Ambient Radial Glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(124,58,237,0.03),transparent_50%)] pointer-events-none"></div>
 
       <div className="w-full max-w-[720px] relative z-10 flex flex-col items-center">
         
@@ -137,41 +137,41 @@ export default function OnboardingPage() {
             <div>
               <WelcomeLogoSVG />
               <h1 className="font-heading font-extrabold text-3xl md:text-4xl text-slate-900 leading-tight">
-                Welcome to SprintFlow{userName ? `, ${userName}` : ""} 👋
+                Welcome to SprintFlow{userName ? `, ${userName}` : ""}
               </h1>
-              <p className="text-slate-500 text-sm md:text-base max-w-lg mx-auto mt-3 font-medium">
+              <p className="text-slate-600 text-sm md:text-base max-w-lg mx-auto mt-3 font-medium">
                 Let's set up your focus space. This takes about 30 seconds and tunes SprintFlow to the way you work.
               </p>
             </div>
 
             {/* 3 cards grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-2xl mx-auto pt-4">
-              <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex flex-col items-center text-center space-y-4 hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center">
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm flex flex-col items-center text-center space-y-4 hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 rounded-2xl bg-purple-50 text-violet-700 flex items-center justify-center">
                   <SparklesIcon />
                 </div>
-                <h3 className="font-heading font-extrabold text-sm text-slate-800 uppercase tracking-wide">AI builds plan</h3>
-                <p className="text-xs text-slate-400 leading-relaxed font-semibold">
+                <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wide">AI builds plan</h3>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">
                   Paste any to-do list and get focused sprints.
                 </p>
               </div>
 
-              <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex flex-col items-center text-center space-y-4 hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm flex flex-col items-center text-center space-y-4 hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center">
                   <ClockIcon />
                 </div>
-                <h3 className="font-heading font-extrabold text-sm text-slate-800 uppercase tracking-wide">Work in sprints</h3>
-                <p className="text-xs text-slate-400 leading-relaxed font-semibold">
+                <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wide">Work in sprints</h3>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">
                   25-minute Pomodoro focus, guided end to end.
                 </p>
               </div>
 
-              <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex flex-col items-center text-center space-y-4 hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center">
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm flex flex-col items-center text-center space-y-4 hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center">
                   <TrophyIcon />
                 </div>
-                <h3 className="font-heading font-extrabold text-sm text-slate-800 uppercase tracking-wide">Earn as you go</h3>
-                <p className="text-xs text-slate-400 leading-relaxed font-semibold">
+                <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wide">Earn as you go</h3>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">
                   Collect XP, coins, streaks and badges.
                 </p>
               </div>

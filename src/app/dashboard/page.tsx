@@ -1057,7 +1057,7 @@ export default function DashboardPage() {
 
                   <div className="text-center space-y-3 py-2">
                     <h4 className="font-medium text-sm text-slate-600 leading-tight">OAuth Provider Integrations</h4>
-                    <p className="font-mono font-bold text-4xl text-violet-600 leading-none tracking-tight tabular-nums">
+                    <p className="font-mono font-bold text-4xl text-slate-900 leading-none tracking-tight tabular-nums">
                       {isSprintActive ? formatTimer(sprintTimeRemaining) : "25:00"}
                     </p>
                     

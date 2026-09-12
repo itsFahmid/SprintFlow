@@ -1028,7 +1028,7 @@ export default function SprintsPage() {
 
             <button
               onClick={handleResumeFocus}
-              className="px-8 h-12 bg-emerald-400 hover:bg-emerald-300 text-slate-900 rounded-2xl text-xs font-bold shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
+              className="px-8 h-12 bg-emerald-400 hover:bg-emerald-300 text-emerald-950 rounded-2xl text-xs font-extrabold shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
             >
               Resume next sprint
             </button>

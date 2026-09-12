@@ -427,7 +427,7 @@ export default function PlannerPage() {
                   }`}>
                     <div className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                        completedSprints === 1 ? "bg-purple-100 text-[#7c3aed]" : "bg-purple-50 text-slate-400"
+                        completedSprints === 1 ? "bg-purple-100 text-[#7c3aed]" : "bg-slate-100 text-slate-500"
                       }`}>
                         <WorkIcon />
                       </div>
