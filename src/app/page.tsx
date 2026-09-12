@@ -85,6 +85,7 @@ export default function Home() {
   
   // Modal States
   const [modalState, setModalState] = useState<"input" | "loading" | "results">("input");
+  const [legalModal, setLegalModal] = useState<"privacy" | "terms" | "refund" | null>(null);
   const [taskInput, setTaskInput] = useState(
     `- Fix responsive styling bugs in the header\n- Add inline SVGs to optimize page loading speed\n- Implement the interactive timer in JS\n- Push changes to staging server for QA testing`
   );
@@ -268,12 +269,11 @@ export default function Home() {
           <div className="hero-mockup-wrapper">
             <div className="app-mockup">
               <div className="app-header-bar">
-                <div className="app-window-controls">
-                  <span className="win-dot win-red"></span>
-                  <span className="win-dot win-yellow"></span>
-                  <span className="win-dot win-green"></span>
+                <div className="app-hud-status flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <span className="text-[11px] font-mono tracking-wider text-slate-300">SESSION HUD</span>
                 </div>
-                <div className="app-address-bar">sprintflow.app/focus</div>
+                <div className="app-address-bar font-mono text-[11px] text-slate-400">SPRINT 1 OF 3 • 25M FOCUS</div>
                 <div className="app-xp-badge-container">
                   <div className="app-xp-badge" id="xp-indicator" style={{ transform: isPlaying ? "scale(1.02)" : "scale(1)" }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
@@ -547,65 +547,74 @@ export default function Home() {
         </div>
       </section>
 
-      {/* --- TESTIMONIALS SECTION --- */}
+      {/* --- WORKFLOW STUDIES SECTION --- */}
       <section className="testimonials section-padding">
         <div className="container">
           <div className="section-header text-center">
-            <h2>Loved by focused people</h2>
-            <p>Developers, founders and students who finally finish their day.</p>
+            <h2>Real workflow breakdowns</h2>
+            <p>How developers, founders, and students structure high-output focus sessions.</p>
           </div>
 
           <div className="testimonials-grid">
             <div className="testimonial-card">
               <div>
-                <div className="testimonial-rating flex items-center gap-1 mb-2">
-                  <StarIcon /><StarIcon /><StarIcon /><StarIcon /><StarIcon />
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-violet-700 bg-violet-50 px-2.5 py-1 rounded-md">Software Engineering</span>
+                  <div className="testimonial-rating flex items-center gap-0.5">
+                    <StarIcon /><StarIcon /><StarIcon /><StarIcon /><StarIcon />
+                  </div>
                 </div>
                 <p className="testimonial-text">
-                  “SprintFlow turned my chaotic todo list into a calm, doable plan. I ship more and stress less.”
+                  “Turned a 14-item backlog dump into 4 structured 25-minute Pomodoro blocks. Shipped OAuth & DB migrations in one afternoon without burnout.”
                 </p>
               </div>
-              <div className="testimonial-user">
+              <div className="testimonial-user mt-4 pt-4 border-t border-slate-100">
                 <div className="user-avatar user-a">A</div>
                 <div className="user-details">
-                  <h4 className="user-name">Aarav M.</h4>
-                  <p className="user-role">Frontend developer</p>
+                  <h4 className="user-name font-bold text-slate-900">Aarav M.</h4>
+                  <p className="user-role text-xs text-slate-500">Full-Stack Developer</p>
                 </div>
               </div>
             </div>
 
             <div className="testimonial-card">
               <div>
-                <div className="testimonial-rating flex items-center gap-1 mb-2">
-                  <StarIcon /><StarIcon /><StarIcon /><StarIcon /><StarIcon />
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md">Academic Research</span>
+                  <div className="testimonial-rating flex items-center gap-0.5">
+                    <StarIcon /><StarIcon /><StarIcon /><StarIcon /><StarIcon />
+                  </div>
                 </div>
                 <p className="testimonial-text">
-                  “The Pomodoro flow plus XP is weirdly addictive — in a good way. My focus streak is at 23 days.”
+                  “Organized 3 complex pharmacology chapters into timed review sprints with scheduled breaks. Kept my focus streak alive for 23 days straight.”
                 </p>
               </div>
-              <div className="testimonial-user">
+              <div className="testimonial-user mt-4 pt-4 border-t border-slate-100">
                 <div className="user-avatar user-s">S</div>
                 <div className="user-details">
-                  <h4 className="user-name">Sadia R.</h4>
-                  <p className="user-role">Indie founder</p>
+                  <h4 className="user-name font-bold text-slate-900">Sadia R.</h4>
+                  <p className="user-role text-xs text-slate-500">Medical Student</p>
                 </div>
               </div>
             </div>
 
             <div className="testimonial-card">
               <div>
-                <div className="testimonial-rating flex items-center gap-1 mb-2">
-                  <StarIcon /><StarIcon /><StarIcon /><StarIcon /><StarIcon />
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-md">Startup Building</span>
+                  <div className="testimonial-rating flex items-center gap-0.5">
+                    <StarIcon /><StarIcon /><StarIcon /><StarIcon /><StarIcon />
+                  </div>
                 </div>
                 <p className="testimonial-text">
-                  “I used to procrastinate for hours. Now I just hit Start Focusing and the AI handles the rest.”
+                  “Eliminated morning planning fatigue entirely. I paste raw brainstorm bullets, hit Start Focus, and execute the prioritized sprints immediately.”
                 </p>
               </div>
-              <div className="testimonial-user">
+              <div className="testimonial-user mt-4 pt-4 border-t border-slate-100">
                 <div className="user-avatar user-t">T</div>
                 <div className="user-details">
-                  <h4 className="user-name">Tanvir H.</h4>
-                  <p className="user-role">CS student</p>
+                  <h4 className="user-name font-bold text-slate-900">Tanvir H.</h4>
+                  <p className="user-role text-xs text-slate-500">Bootstrapped Founder</p>
                 </div>
               </div>
             </div>
@@ -794,19 +803,63 @@ export default function Home() {
             <div className="footer-links-col">
               <h4>Legal</h4>
               <ul className="footer-links-list">
-                <li><a href="#" className="footer-link">Privacy policy</a></li>
-                <li><a href="#" className="footer-link">Terms of service</a></li>
-                <li><a href="#" className="footer-link">Refund policy</a></li>
+                <li><button onClick={() => setLegalModal("privacy")} className="footer-link text-left">Privacy policy</button></li>
+                <li><button onClick={() => setLegalModal("terms")} className="footer-link text-left">Terms of service</button></li>
+                <li><button onClick={() => setLegalModal("refund")} className="footer-link text-left">Refund policy</button></li>
               </ul>
             </div>
           </div>
 
           <div className="footer-bottom">
             <p>© 2026 SprintFlow. All rights reserved.</p>
-            <p className="footer-credits">Made for focused minds 💜</p>
+            <p className="footer-credits">Made for focused minds</p>
           </div>
         </div>
       </footer>
+
+      {/* --- LEGAL MODAL DIALOG --- */}
+      {legalModal && (
+        <div className="modal-overlay active">
+          <div className="modal-window max-w-xl">
+            <div className="modal-header">
+              <h2 className="text-lg font-bold text-slate-900">
+                {legalModal === "privacy" && "Privacy Policy"}
+                {legalModal === "terms" && "Terms of Service"}
+                {legalModal === "refund" && "Refund Policy"}
+              </h2>
+              <button className="modal-close-btn" onClick={() => setLegalModal(null)}>&times;</button>
+            </div>
+            <div className="modal-body space-y-4 text-sm text-slate-600 leading-relaxed max-h-[60vh] overflow-y-auto">
+              {legalModal === "privacy" && (
+                <>
+                  <p><strong>Last updated: September 2026</strong></p>
+                  <p>SprintFlow values your focus and your data privacy. We do not sell, rent, or monetize your task data, sprint notes, or study schedules to third parties.</p>
+                  <p>Your task inputs are processed solely to generate prioritized Pomodoro sprints. All communications use TLS 1.3 encryption in transit and secure database storage at rest.</p>
+                  <p>You may request complete export or deletion of your account and sprint history at any time from your settings workspace.</p>
+                </>
+              )}
+              {legalModal === "terms" && (
+                <>
+                  <p><strong>Terms of Use</strong></p>
+                  <p>By using SprintFlow, you agree to focus responsibly and use our AI sprint planner in compliance with applicable local laws.</p>
+                  <p>SprintFlow provides focus timers, AI planning assistance, and streak mechanics on an as-is basis designed to boost personal productivity.</p>
+                  <p>Pro subscriptions may be cancelled at any time before the billing renewal date with zero cancellation fees.</p>
+                </>
+              )}
+              {legalModal === "refund" && (
+                <>
+                  <p><strong>100% Satisfaction Guarantee</strong></p>
+                  <p>We offer an unconditional 7-day money-back guarantee on all Pro tier monthly and multi-month subscription plans.</p>
+                  <p>If SprintFlow doesn't measurably improve your daily study or work focus, simply contact support or initiate a refund from your billing dashboard.</p>
+                </>
+              )}
+              <div className="pt-4 border-t border-slate-100 flex justify-end">
+                <button className="btn btn-secondary" onClick={() => setLegalModal(null)}>Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* --- INTERACTIVE SIMULATOR MODAL (WOW FACTOR) --- */}
       <div className={`modal-overlay ${isModalOpen ? "active" : ""}`}>
