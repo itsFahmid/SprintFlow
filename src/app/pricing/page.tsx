@@ -272,10 +272,6 @@ export default function PricingPage() {
           
           {/* Hero Section */}
           <div className="text-center space-y-3 max-w-2xl mx-auto">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 border border-purple-200/60 rounded-full text-[10px] font-extrabold text-[#7c3aed] uppercase tracking-wider shadow-sm">
-              <CrownIcon />
-              SPRINTFLOW PRO
-            </span>
             <h2 className="font-heading font-extrabold text-2xl md:text-3xl lg:text-4xl text-slate-900 leading-tight">
               Do your best focus work
             </h2>

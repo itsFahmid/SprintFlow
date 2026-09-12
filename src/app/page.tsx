@@ -21,6 +21,51 @@ const TrophyIcon = () => (
   </svg>
 );
 
+const FlameIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+  </svg>
+);
+
+const ZapIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+  </svg>
+);
+
+const CoinIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M14.5 9h-3.5a1.5 1.5 0 0 0 0 3h2a1.5 1.5 0 0 1 0 3H9.5m2.5-7.5v1.5m0 6V18" />
+  </svg>
+);
+
+const TargetIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="12" cy="12" r="6" />
+    <circle cx="12" cy="12" r="2" />
+  </svg>
+);
+
+const CrownIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
+  </svg>
+);
+
+const StarIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+
 interface Sprint {
   name: string;
   duration: number;
@@ -184,12 +229,6 @@ export default function Home() {
       {/* --- HERO SECTION --- */}
       <section className="hero">
         <div className="container">
-          <div className="hero-badge-container">
-            <span className="hero-badge">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-              AI-powered focus & Pomodoro
-            </span>
-          </div>
           
           <h1>Turn your task list into focused sprints</h1>
           
@@ -216,8 +255,12 @@ export default function Home() {
               <div className="avatar" style={{ backgroundColor: "#fb7185", marginLeft: "-10px" }}>M</div>
               <div className="avatar" style={{ backgroundColor: "#fbbf24", marginLeft: "-10px" }}>K</div>
             </div>
-            <div className="rating-details">
-              <span className="rating-stars">★★★★★</span> <span className="rating-score">4.9</span> Loved by 12,000+ focused minds
+            <div className="rating-details flex items-center gap-2">
+              <div className="flex items-center gap-0.5">
+                <StarIcon /><StarIcon /><StarIcon /><StarIcon /><StarIcon />
+              </div>
+              <span className="rating-score font-bold text-slate-900">4.9</span>
+              <span className="text-slate-600 font-medium text-xs">Loved by 12,000+ focused minds</span>
             </div>
           </div>
 
@@ -268,7 +311,9 @@ export default function Home() {
                 <div className="app-task-name">{taskName}</div>
 
                 <div className="app-streak-badge">
-                  <div className="streak-icon">🔥</div>
+                  <div className="streak-icon text-amber-500 bg-amber-500/10 p-1.5 rounded-lg flex items-center justify-center">
+                    <FlameIcon />
+                  </div>
                   <div className="streak-text">
                     <h4>7-day streak</h4>
                     <p>Keep it alive!</p>
@@ -284,7 +329,6 @@ export default function Home() {
       <section className="how-it-works section-padding" id="how-it-works">
         <div className="container">
           <div className="section-header text-center">
-            <span className="section-badge badge-purple">How it works</span>
             <h2>From to-do list to done in three steps</h2>
             <p>No setup, no fuss — paste your tasks and start focusing in under a minute.</p>
           </div>
@@ -324,7 +368,6 @@ export default function Home() {
       <section className="features section-padding" id="features">
         <div className="container">
           <div className="section-header text-center">
-            <span className="section-badge badge-purple">Features</span>
             <h2>Everything you need to focus</h2>
             <p>One calm, AI-native workspace that plans your day and keeps you in flow.</p>
           </div>
@@ -386,16 +429,15 @@ export default function Home() {
         <div className="container">
           <div className="gamification-wrapper">
             <div className="gamification-info">
-              <span className="section-badge badge-orange">Stay motivated</span>
               <h2>Make focus feel like a game</h2>
               <p className="gamification-subtitle">
                 Every finished sprint earns XP and coins, builds your streak, and pushes you up the levels. Small wins, compounding momentum.
               </p>
               <ul className="gamification-list">
-                <li><span className="check-icon">✓</span> Earn XP and level up with every sprint</li>
-                <li><span className="check-icon">✓</span> Build daily streaks you won't want to break</li>
-                <li><span className="check-icon">✓</span> Collect coins and redeem rewards</li>
-                <li><span className="check-icon">✓</span> Unlock achievement badges as you grow</li>
+                <li><span className="check-icon flex items-center justify-center text-emerald-600 bg-emerald-50 rounded-full w-5 h-5"><CheckIcon /></span> Earn XP and level up with every sprint</li>
+                <li><span className="check-icon flex items-center justify-center text-emerald-600 bg-emerald-50 rounded-full w-5 h-5"><CheckIcon /></span> Build daily streaks you won't want to break</li>
+                <li><span className="check-icon flex items-center justify-center text-emerald-600 bg-emerald-50 rounded-full w-5 h-5"><CheckIcon /></span> Collect coins and redeem rewards</li>
+                <li><span className="check-icon flex items-center justify-center text-emerald-600 bg-emerald-50 rounded-full w-5 h-5"><CheckIcon /></span> Unlock achievement badges as you grow</li>
               </ul>
             </div>
 
@@ -417,28 +459,28 @@ export default function Home() {
 
                 <div className="gamified-stats-grid">
                   <div className="stat-box">
-                    <div className="stat-box-icon">⚡</div>
+                    <div className="stat-box-icon text-amber-500"><ZapIcon /></div>
                     <h4>2,480</h4>
                     <p>XP</p>
                   </div>
                   <div className="stat-box">
-                    <div className="stat-box-icon">🪙</div>
+                    <div className="stat-box-icon text-amber-500"><CoinIcon /></div>
                     <h4>340</h4>
                     <p>Coins</p>
                   </div>
                   <div className="stat-box">
-                    <div className="stat-box-icon">🔥</div>
+                    <div className="stat-box-icon text-amber-500"><FlameIcon /></div>
                     <h4>7</h4>
                     <p>Streak</p>
                   </div>
                 </div>
 
                 <div className="gamified-badges-row">
-                  <div className="badge-slot flame" title="Flame Streak Badge">🔥</div>
-                  <div className="badge-slot target" title="Bullseye Focus Badge">🎯</div>
-                  <div className="badge-slot crown" title="Crown Achievements Badge">👑</div>
-                  <div className="badge-slot bolt" title="Supercharged Energy Badge">⚡</div>
-                  <div className="badge-slot more">+20</div>
+                  <div className="badge-slot flame text-amber-500 flex items-center justify-center" title="Flame Streak Badge"><FlameIcon /></div>
+                  <div className="badge-slot target text-indigo-500 flex items-center justify-center" title="Bullseye Focus Badge"><TargetIcon /></div>
+                  <div className="badge-slot crown text-amber-500 flex items-center justify-center" title="Crown Achievements Badge"><CrownIcon /></div>
+                  <div className="badge-slot bolt text-amber-500 flex items-center justify-center" title="Supercharged Energy Badge"><ZapIcon /></div>
+                  <div className="badge-slot more text-slate-700 font-bold flex items-center justify-center">+20</div>
                 </div>
               </div>
             </div>
@@ -450,7 +492,6 @@ export default function Home() {
       <section className="pricing section-padding" id="pricing">
         <div className="container">
           <div className="section-header text-center">
-            <span className="section-badge badge-purple">Pricing</span>
             <h2>Simple pricing, serious focus</h2>
             <p>Start free forever. Go Pro for unlimited focus — with a 3-day trial, no card needed.</p>
           </div>
@@ -466,10 +507,10 @@ export default function Home() {
               <div className="price-no-discount-spacer"></div>
 
               <ul className="pricing-list">
-                <li><span className="check-icon">✓</span> 3 focus sprints per day</li>
-                <li><span className="check-icon">✓</span> Basic AI task breakdown</li>
-                <li><span className="check-icon">✓</span> This-week analytics</li>
-                <li><span className="check-icon">✓</span> Streaks & daily goal</li>
+                <li><span className="check-icon flex items-center justify-center text-slate-600 bg-slate-100 rounded-full w-4 h-4 shrink-0"><CheckIcon /></span> 3 focus sprints per day</li>
+                <li><span className="check-icon flex items-center justify-center text-slate-600 bg-slate-100 rounded-full w-4 h-4 shrink-0"><CheckIcon /></span> Basic AI task breakdown</li>
+                <li><span className="check-icon flex items-center justify-center text-slate-600 bg-slate-100 rounded-full w-4 h-4 shrink-0"><CheckIcon /></span> This-week analytics</li>
+                <li><span className="check-icon flex items-center justify-center text-slate-600 bg-slate-100 rounded-full w-4 h-4 shrink-0"><CheckIcon /></span> Streaks & daily goal</li>
               </ul>
 
               <Link href="/signup" className="btn btn-secondary text-center">Start free</Link>
@@ -486,20 +527,23 @@ export default function Home() {
               <div className="price-discount-text">or 499 BDT for 3 months • save 16%</div>
 
               <ul className="pricing-list">
-                <li><span className="check-icon" style={{ backgroundColor: "#f3e8ff", color: "var(--primary)" }}>✓</span> Unlimited daily sprints</li>
-                <li><span className="check-icon" style={{ backgroundColor: "#f3e8ff", color: "var(--primary)" }}>✓</span> AI deep-planning</li>
-                <li><span className="check-icon" style={{ backgroundColor: "#f3e8ff", color: "var(--primary)" }}>✓</span> Full analytics & history</li>
-                <li><span className="check-icon" style={{ backgroundColor: "#f3e8ff", color: "var(--primary)" }}>✓</span> Custom lengths, streak freeze & themes</li>
+                <li><span className="check-icon flex items-center justify-center text-violet-700 bg-violet-100 rounded-full w-4 h-4 shrink-0"><CheckIcon /></span> Unlimited daily sprints</li>
+                <li><span className="check-icon flex items-center justify-center text-violet-700 bg-violet-100 rounded-full w-4 h-4 shrink-0"><CheckIcon /></span> AI deep-planning</li>
+                <li><span className="check-icon flex items-center justify-center text-violet-700 bg-violet-100 rounded-full w-4 h-4 shrink-0"><CheckIcon /></span> Full analytics & history</li>
+                <li><span className="check-icon flex items-center justify-center text-violet-700 bg-violet-100 rounded-full w-4 h-4 shrink-0"><CheckIcon /></span> Custom lengths, streak freeze & themes</li>
               </ul>
 
               <Link href="/signup" className="btn btn-primary text-center">
-                <span style={{ fontSize: "0.8rem" }}>✦</span> Start 3-day free trial
+                Start 3-day free trial
               </Link>
               <p className="pricing-subtext">No payment needed to start - cancel anytime</p>
             </div>
           </div>
 
-          <a href="#" className="pricing-compare-link">See full plan comparison ➔</a>
+          <Link href="/pricing" className="pricing-compare-link inline-flex items-center gap-1 group">
+            <span>See full plan comparison</span>
+            <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+          </Link>
         </div>
       </section>
 
@@ -507,7 +551,6 @@ export default function Home() {
       <section className="testimonials section-padding">
         <div className="container">
           <div className="section-header text-center">
-            <span className="section-badge badge-orange">Testimonials</span>
             <h2>Loved by focused people</h2>
             <p>Developers, founders and students who finally finish their day.</p>
           </div>
@@ -515,7 +558,9 @@ export default function Home() {
           <div className="testimonials-grid">
             <div className="testimonial-card">
               <div>
-                <div className="testimonial-rating">★★★★★</div>
+                <div className="testimonial-rating flex items-center gap-1 mb-2">
+                  <StarIcon /><StarIcon /><StarIcon /><StarIcon /><StarIcon />
+                </div>
                 <p className="testimonial-text">
                   “SprintFlow turned my chaotic todo list into a calm, doable plan. I ship more and stress less.”
                 </p>
@@ -531,7 +576,9 @@ export default function Home() {
 
             <div className="testimonial-card">
               <div>
-                <div className="testimonial-rating">★★★★★</div>
+                <div className="testimonial-rating flex items-center gap-1 mb-2">
+                  <StarIcon /><StarIcon /><StarIcon /><StarIcon /><StarIcon />
+                </div>
                 <p className="testimonial-text">
                   “The Pomodoro flow plus XP is weirdly addictive — in a good way. My focus streak is at 23 days.”
                 </p>
@@ -547,7 +594,9 @@ export default function Home() {
 
             <div className="testimonial-card">
               <div>
-                <div className="testimonial-rating">★★★★★</div>
+                <div className="testimonial-rating flex items-center gap-1 mb-2">
+                  <StarIcon /><StarIcon /><StarIcon /><StarIcon /><StarIcon />
+                </div>
                 <p className="testimonial-text">
                   “I used to procrastinate for hours. Now I just hit Start Focusing and the AI handles the rest.”
                 </p>
@@ -568,7 +617,6 @@ export default function Home() {
       <section className="faq section-padding" id="faq">
         <div className="container">
           <div className="section-header text-center">
-            <span className="section-badge badge-blue">FAQ</span>
             <h2>Frequently asked questions</h2>
           </div>
 
@@ -583,7 +631,7 @@ export default function Home() {
                   </svg>
                 </div>
               </button>
-              <div className="faq-answer" style={{ maxHeight: activeFaq === 1 ? "200px" : "0" }}>
+              <div className="faq-answer">
                 <div className="faq-answer-content">
                   Yes — every new account gets 3 days of full Pro access with no payment method required. After that you stay on Free (3 sprints a day) unless you upgrade.
                 </div>
@@ -600,7 +648,7 @@ export default function Home() {
                   </svg>
                 </div>
               </button>
-              <div className="faq-answer" style={{ maxHeight: activeFaq === 2 ? "200px" : "0" }}>
+              <div className="faq-answer">
                 <div className="faq-answer-content">
                   We bill monthly or per 3-month cycle depending on your chosen plan. You can cancel at any time directly from your billing dashboard with a single click.
                 </div>
@@ -617,7 +665,7 @@ export default function Home() {
                   </svg>
                 </div>
               </button>
-              <div className="faq-answer" style={{ maxHeight: activeFaq === 3 ? "200px" : "0" }}>
+              <div className="faq-answer">
                 <div className="faq-answer-content">
                   We support standard local debit/credit cards, mobile banking wallets (bkash, Nagad, Rocket), and international credit cards.
                 </div>
@@ -634,7 +682,7 @@ export default function Home() {
                   </svg>
                 </div>
               </button>
-              <div className="faq-answer" style={{ maxHeight: activeFaq === 4 ? "200px" : "0" }}>
+              <div className="faq-answer">
                 <div className="faq-answer-content">
                   Our model analyzes your task description, categorizes priority, estimates task complexity, and structures it into optimized 25-minute Pomodoro sprints with scheduled breaks.
                 </div>
@@ -651,7 +699,7 @@ export default function Home() {
                   </svg>
                 </div>
               </button>
-              <div className="faq-answer" style={{ maxHeight: activeFaq === 5 ? "200px" : "0" }}>
+              <div className="faq-answer">
                 <div className="faq-answer-content">
                   Absolutely! SprintFlow is fully responsive and behaves like a progressive web app (PWA) on mobile devices so you can track focus on the go.
                 </div>
