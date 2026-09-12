@@ -69,17 +69,65 @@ const CheckIcon = () => (
 interface Sprint {
   name: string;
   duration: number;
+  active?: boolean;
 }
+
+const WORKFLOW_PRESETS = [
+  {
+    id: "dev",
+    label: "💻 Software Sprint",
+    taskName: "Implement OAuth & JWT Session Handler",
+    duration: 25,
+    remaining: 18 * 60 + 24,
+    sprints: [
+      { name: "Implement OAuth & JWT Session Handler", duration: 25, active: true },
+      { name: "PostgreSQL Migration & Schema Indexing", duration: 25, active: false },
+      { name: "Unit Test & Edge Case Coverage", duration: 15, active: false },
+    ],
+    xp: 40,
+    streak: "7-day streak"
+  },
+  {
+    id: "study",
+    label: "📖 Deep Study Session",
+    taskName: "Cardiovascular Pharmacology Review",
+    duration: 25,
+    remaining: 22 * 60 + 10,
+    sprints: [
+      { name: "Cardiovascular Pharmacology Review", duration: 25, active: true },
+      { name: "ECG Pattern Recognition & Past MCQs", duration: 25, active: false },
+      { name: "Flashcard Spaced Repetition Drill", duration: 20, active: false },
+    ],
+    xp: 45,
+    streak: "14-day streak"
+  },
+  {
+    id: "launch",
+    label: "🚀 Product Launch Sprint",
+    taskName: "Draft & Sequence Release Notes",
+    duration: 25,
+    remaining: 15 * 60 + 0,
+    sprints: [
+      { name: "Draft & Sequence Release Notes", duration: 25, active: true },
+      { name: "PR #412 Code Review & Staging Smoke Test", duration: 25, active: false },
+      { name: "Customer Outreach & Live Announcement", duration: 20, active: false },
+    ],
+    xp: 50,
+    streak: "21-day streak"
+  }
+];
 
 export default function Home() {
   // --- STATE MANAGEMENT ---
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeFaq, setActiveFaq] = useState<number | null>(1); // FAQ 1 open by default matching screenshot
+  const [activeFaq, setActiveFaq] = useState<number | null>(1);
+  const [activePreset, setActivePreset] = useState("dev");
+  const [calculatorHours, setCalculatorHours] = useState(4);
   
   // Timer States
-  const [taskName, setTaskName] = useState("Debug dashboard slow-load");
-  const [totalDuration, setTotalDuration] = useState(25 * 60); // Default 25 min
-  const [remainingTime, setRemainingTime] = useState(18 * 60 + 24); // Starts at 18:24 matching screenshot
+  const [taskName, setTaskName] = useState(WORKFLOW_PRESETS[0].taskName);
+  const [totalDuration, setTotalDuration] = useState(25 * 60);
+  const [remainingTime, setRemainingTime] = useState(WORKFLOW_PRESETS[0].remaining);
   const [isPlaying, setIsPlaying] = useState(false);
   const [timerLabel, setTimerLabel] = useState("remaining");
   
@@ -90,6 +138,18 @@ export default function Home() {
     `- Fix responsive styling bugs in the header\n- Add inline SVGs to optimize page loading speed\n- Implement the interactive timer in JS\n- Push changes to staging server for QA testing`
   );
   const [generatedSprints, setGeneratedSprints] = useState<Sprint[]>([]);
+
+  // Workflow Preset Switcher
+  const handleSelectPreset = (presetId: string) => {
+    const preset = WORKFLOW_PRESETS.find(p => p.id === presetId);
+    if (!preset) return;
+    setActivePreset(presetId);
+    setTaskName(preset.taskName);
+    setTotalDuration(preset.duration * 60);
+    setRemainingTime(preset.remaining);
+    setIsPlaying(false);
+    setTimerLabel("remaining");
+  };
 
   // Timer Effect
   useEffect(() => {
@@ -265,6 +325,24 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Workflow Preset Switcher */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mr-1">Interactive demo:</span>
+            {WORKFLOW_PRESETS.map((preset) => (
+              <button
+                key={preset.id}
+                onClick={() => handleSelectPreset(preset.id)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+                  activePreset === preset.id
+                    ? "bg-violet-700 border-violet-700 text-white shadow-sm"
+                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                }`}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+
           {/* App Mockup */}
           <div className="hero-mockup-wrapper">
             <div className="app-mockup">
@@ -273,92 +351,244 @@ export default function Home() {
                   <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
                   <span className="text-[11px] font-mono tracking-wider text-slate-300">SESSION HUD</span>
                 </div>
-                <div className="app-address-bar font-mono text-[11px] text-slate-400">SPRINT 1 OF 3 • 25M FOCUS</div>
+                <div className="app-address-bar font-mono text-[11px] text-slate-400">
+                  {activePreset.toUpperCase()} • 25M FOCUS
+                </div>
                 <div className="app-xp-badge-container">
                   <div className="app-xp-badge" id="xp-indicator" style={{ transform: isPlaying ? "scale(1.02)" : "scale(1)" }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
                     <div>
-                      <strong>+40 XP earned</strong>
-                      <span>Sprint completed</span>
+                      <strong>+{WORKFLOW_PRESETS.find(p => p.id === activePreset)?.xp || 40} XP</strong>
+                      <span>On completion</span>
                     </div>
                   </div>
                 </div>
               </div>
               
-              <div className="app-content">
-                <div className="app-focus-status">
-                  <span className="status-dot"></span>
-                  {isPlaying ? "FOCUS IN PROGRESS" : "FOCUS PAUSED"}
-                </div>
+              <div className="app-content grid grid-cols-1 md:grid-cols-12 gap-8 items-center p-6 md:p-8">
+                
+                {/* Left Timer Column */}
+                <div className="md:col-span-6 flex flex-col items-center justify-center relative">
+                  <div className="app-focus-status mb-4">
+                    <span className="status-dot"></span>
+                    {isPlaying ? "FOCUS IN PROGRESS" : "FOCUS PAUSED (CLICK TIMER TO START)"}
+                  </div>
 
-                <div className="app-timer-container" onClick={() => setIsPlaying(!isPlaying)} title="Click to play/pause">
-                  <svg className="timer-svg" viewBox="0 0 220 220">
-                    <circle className="timer-track" cx="110" cy="110" r="100"></circle>
-                    <circle 
-                      className="timer-progress" 
-                      cx="110" 
-                      cy="110" 
-                      r="100"
-                      style={{ strokeDashoffset: strokeOffset }}
-                    ></circle>
-                  </svg>
-                  <div className="timer-text-wrapper">
-                    <div className="timer-time">{formatTime(remainingTime)}</div>
-                    <div className="timer-label" style={{ color: isPlaying ? "#a78bfa" : "#94a3b8" }}>{timerLabel}</div>
+                  <div className="app-timer-container" onClick={() => setIsPlaying(!isPlaying)} title="Click to play/pause focus session">
+                    <svg className="timer-svg" viewBox="0 0 220 220">
+                      <circle className="timer-track" cx="110" cy="110" r="100"></circle>
+                      <circle 
+                        className="timer-progress" 
+                        cx="110" 
+                        cy="110" 
+                        r="100"
+                        style={{ strokeDashoffset: strokeOffset }}
+                      ></circle>
+                    </svg>
+                    <div className="timer-text-wrapper">
+                      <div className="timer-time">{formatTime(remainingTime)}</div>
+                      <div className="timer-label" style={{ color: isPlaying ? "#a78bfa" : "#94a3b8" }}>{timerLabel}</div>
+                    </div>
+                  </div>
+
+                  <div className="app-task-name text-center max-w-sm mb-4">{taskName}</div>
+
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => setIsPlaying(!isPlaying)}
+                      className={`btn h-9 px-5 text-xs font-bold gap-2 ${isPlaying ? "btn-secondary" : "btn-primary"}`}
+                    >
+                      {isPlaying ? "Pause Focus" : "▶ Start Sprint"}
+                    </button>
+                    <button 
+                      onClick={triggerChime}
+                      className="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 text-xs flex items-center gap-1.5 border border-slate-700"
+                      title="Test Audio Chime"
+                    >
+                      <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                      <span>Chime</span>
+                    </button>
                   </div>
                 </div>
 
-                <div className="app-task-name">{taskName}</div>
-
-                <div className="app-streak-badge">
-                  <div className="streak-icon text-amber-500 bg-amber-500/10 p-1.5 rounded-lg flex items-center justify-center">
-                    <FlameIcon />
+                {/* Right Sprint Sequence Column */}
+                <div className="md:col-span-6 bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">AI Sprint Breakdown</span>
+                    <span className="text-[11px] font-mono text-emerald-400">3 Sprints • 65m Total</span>
                   </div>
-                  <div className="streak-text">
-                    <h4>7-day streak</h4>
-                    <p>Keep it alive!</p>
+
+                  <div className="space-y-2.5">
+                    {WORKFLOW_PRESETS.find(p => p.id === activePreset)?.sprints.map((sprint, idx) => (
+                      <div 
+                        key={idx}
+                        className={`p-3 rounded-xl border transition-all ${
+                          idx === 0
+                            ? "bg-violet-950/40 border-violet-700/60 text-white"
+                            : "bg-slate-900/40 border-slate-800 text-slate-400"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <span className={`w-5 h-5 rounded-md text-[10px] font-bold flex items-center justify-center ${
+                              idx === 0 ? "bg-violet-600 text-white" : "bg-slate-800 text-slate-400"
+                            }`}>
+                              {idx + 1}
+                            </span>
+                            <span className="text-xs font-semibold">{sprint.name}</span>
+                          </div>
+                          <span className="text-[11px] font-mono font-bold text-slate-300 tabular-nums">{sprint.duration}m</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-2 flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-800/80">
+                    <span className="flex items-center gap-1 text-amber-400 font-semibold">
+                      <FlameIcon />
+                      <span>{WORKFLOW_PRESETS.find(p => p.id === activePreset)?.streak}</span>
+                    </span>
+                    <span>5m rest scheduled between sprints</span>
                   </div>
                 </div>
+
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* --- HOW IT WORKS SECTION --- */}
-      <section className="how-it-works section-padding" id="how-it-works">
+      {/* --- CHAOS VS FLOW TRANSFORMATION SECTION --- */}
+      <section className="transformation section-padding bg-slate-50 border-y border-slate-200/80">
         <div className="container">
           <div className="section-header text-center">
-            <h2>From to-do list to done in three steps</h2>
-            <p>No setup, no fuss — paste your tasks and start focusing in under a minute.</p>
+            <h2>The focus transformation</h2>
+            <p>See why unstructured to-do lists fail, and how SprintFlow turns overwhelm into deep execution.</p>
           </div>
 
-          <div className="steps-grid">
-            <div className="step-card">
-              <div className="step-icon-box icon-purple">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><polyline points="3 6 4 7 6 5"></polyline><polyline points="3 12 4 13 6 11"></polyline><polyline points="3 18 4 19 6 17"></polyline></svg>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
+            
+            {/* The Old Way */}
+            <div className="bg-white border border-rose-200/80 rounded-2xl p-7 space-y-5 shadow-sm">
+              <div className="flex items-center justify-between pb-3 border-b border-rose-100">
+                <span className="text-xs font-bold uppercase tracking-wider text-rose-700 bg-rose-50 px-2.5 py-1 rounded-md">Without SprintFlow</span>
+                <span className="text-xs text-rose-600 font-semibold">Overwhelm & Friction</span>
               </div>
-              <span className="step-num">1</span>
-              <h3>Paste your tasks</h3>
-              <p>Drop in your to-do list — bullet points, rough notes, anything goes.</p>
+              <ul className="space-y-3 text-xs text-slate-600">
+                <li className="flex items-start gap-2.5">
+                  <span className="text-rose-500 font-bold">✕</span>
+                  <span>14 unstructured tasks dumped into notes with no clear start point</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-rose-500 font-bold">✕</span>
+                  <span>Constant task-switching and cognitive fatigue trying to self-plan</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-rose-500 font-bold">✕</span>
+                  <span>Zero time-boxing leads to 4-hour tasks that drag across the entire day</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-rose-500 font-bold">✕</span>
+                  <span>No feedback, no streaks, and zero sense of tangible accomplishment</span>
+                </li>
+              </ul>
             </div>
 
-            <div className="step-card">
-              <div className="step-icon-box icon-blue">
-                <SparklesIcon />
+            {/* The SprintFlow Way */}
+            <div className="bg-white border border-emerald-200/80 rounded-2xl p-7 space-y-5 shadow-sm">
+              <div className="flex items-center justify-between pb-3 border-b border-emerald-100">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-md">With SprintFlow</span>
+                <span className="text-xs text-emerald-700 font-semibold">Immediate Flow State</span>
               </div>
-              <span className="step-num">2</span>
-              <h3>AI builds your sprints</h3>
-              <p>Get a prioritized plan of 15-30 min Pomodoro sprints in seconds.</p>
+              <ul className="space-y-3 text-xs text-slate-700">
+                <li className="flex items-start gap-2.5">
+                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span>AI immediately sequences tasks into 25-minute Pomodoro sprints</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span>Single-task focus HUD keeps your attention locked on one objective</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span>Automatic rest intervals protect cognitive stamina and prevent burnout</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span>Gamified XP, streaks, and milestone badges make progress visible</span>
+                </li>
+              </ul>
             </div>
 
-            <div className="step-card">
-              <div className="step-icon-box icon-green">
-                <TrophyIcon />
+          </div>
+        </div>
+      </section>
+
+      {/* --- DAILY OUTPUT CALCULATOR SECTION --- */}
+      <section className="calculator section-padding">
+        <div className="container">
+          <div className="section-header text-center">
+            <h2>Calculate your focus output</h2>
+            <p>Select your available focus time and see how SprintFlow structures your day.</p>
+          </div>
+
+          <div className="max-w-3xl mx-auto bg-white border border-slate-200/90 rounded-2xl p-8 shadow-sm space-y-8">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">Available focus time:</span>
+              <div className="flex flex-wrap gap-2">
+                {[1, 2, 4, 6].map((hrs) => (
+                  <button
+                    key={hrs}
+                    onClick={() => setCalculatorHours(hrs)}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+                      calculatorHours === hrs
+                        ? "bg-violet-700 border-violet-700 text-white shadow-sm"
+                        : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                    }`}
+                  >
+                    {hrs} {hrs === 1 ? "Hour" : "Hours"}
+                  </button>
+                ))}
               </div>
-              <span className="step-num">3</span>
-              <h3>Focus & earn</h3>
-              <p>Run guided sessions and rack up XP, streaks, coins and badges.</p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="text-2xl font-bold font-heading text-slate-900 tabular-nums">
+                  {Math.floor((calculatorHours * 60) / 30)}
+                </span>
+                <p className="text-[11px] text-slate-500 mt-1 font-medium">25m Sprints</p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="text-2xl font-bold font-heading text-slate-900 tabular-nums">
+                  {Math.max(1, Math.floor((calculatorHours * 60) / 30) - 1)}
+                </span>
+                <p className="text-[11px] text-slate-500 mt-1 font-medium">5m Breathers</p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="text-2xl font-bold font-heading text-slate-900 tabular-nums">
+                  +{Math.floor((calculatorHours * 60) / 30) * 40}
+                </span>
+                <p className="text-[11px] text-slate-500 mt-1 font-medium">XP Earned</p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="text-2xl font-bold font-heading text-emerald-700 tabular-nums">
+                  +1
+                </span>
+                <p className="text-[11px] text-slate-500 mt-1 font-medium">Streak Multiplier</p>
+              </div>
+            </div>
+
+            <div className="pt-2 text-center">
+              <button 
+                onClick={() => { setModalState("input"); setIsModalOpen(true); }}
+                className="btn btn-primary"
+              >
+                Plan My {calculatorHours}-Hour Sprints Now
+              </button>
             </div>
           </div>
         </div>
