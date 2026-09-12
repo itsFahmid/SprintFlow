@@ -255,11 +255,8 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center font-sans">
-        <div className="relative w-16 h-16 flex items-center justify-center select-none">
-          <div className="absolute inset-0 bg-[#7c3aed]/5 backdrop-blur-md rounded-full border border-[#7c3aed]/10 animate-pulse"></div>
-          <div className="w-12 h-12 border-4 border-[#7c3aed]/20 border-t-[#7c3aed] rounded-full animate-spin"></div>
-        </div>
-        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-4 animate-pulse">Loading workspace...</p>
+        <div className="w-12 h-12 border-4 border-violet-100 border-t-violet-600 rounded-full animate-spin"></div>
+        <p className="text-xs text-slate-400 font-medium mt-4">Loading workspace…</p>
       </div>
     );
   }
@@ -268,38 +265,38 @@ export default function DashboardPage() {
   const navigationLinks = (
     <ul className="space-y-1.5 list-none p-0">
       <li>
-        <Link href="/dashboard" className="flex items-center gap-3.5 px-4 py-3 rounded-xl bg-purple-50 text-[#7c3aed] font-semibold text-sm transition-all duration-150">
-          <DashboardIcon />
+        <Link href="/dashboard" className="nav-item flex items-center gap-3.5 px-4 py-3 rounded-xl bg-violet-50 text-violet-700 font-semibold text-sm transition-all duration-150">
+          <span className="nav-item-icon"><DashboardIcon /></span>
           Dashboard
         </Link>
       </li>
       <li>
-        <Link href="/tasks" className="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 font-medium text-sm transition-all duration-150">
-          <TasksIcon />
+        <Link href="/tasks" className="nav-item flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 font-medium text-sm transition-all duration-150">
+          <span className="nav-item-icon"><TasksIcon /></span>
           Tasks
         </Link>
       </li>
       <li>
-        <Link href="/planner" className="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 font-medium text-sm transition-all duration-150">
-          <PlannerIcon />
+        <Link href="/planner" className="nav-item flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 font-medium text-sm transition-all duration-150">
+          <span className="nav-item-icon"><PlannerIcon /></span>
           Planner
         </Link>
       </li>
       <li>
-        <Link href="/sprints" className="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 font-medium text-sm transition-all duration-150">
-          <SprintsIcon />
+        <Link href="/sprints" className="nav-item flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 font-medium text-sm transition-all duration-150">
+          <span className="nav-item-icon"><SprintsIcon /></span>
           Sprints
         </Link>
       </li>
       <li>
-        <Link href="/rewards" className="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 font-medium text-sm transition-all duration-150">
-          <RewardsIcon />
+        <Link href="/rewards" className="nav-item flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 font-medium text-sm transition-all duration-150">
+          <span className="nav-item-icon"><RewardsIcon /></span>
           Rewards
         </Link>
       </li>
       <li>
-        <Link href="/analytics" className="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 font-medium text-sm transition-all duration-150">
-          <AnalyticsIcon />
+        <Link href="/analytics" className="nav-item flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 font-medium text-sm transition-all duration-150">
+          <span className="nav-item-icon"><AnalyticsIcon /></span>
           Analytics
         </Link>
       </li>
@@ -317,26 +314,25 @@ export default function DashboardPage() {
   const footerBlock = (
     <div className="space-y-6">
       {/* Go Pro Card */}
-      <div className="bg-gradient-to-br from-[#7c3aed] to-[#6366f1] rounded-2xl p-5 text-white relative overflow-hidden shadow-md">
-        <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
-        <h4 className="font-heading font-extrabold text-sm mb-1 uppercase tracking-wider text-white/90">Go Pro</h4>
-        <p className="text-[11px] leading-normal text-white/80 mb-4">
-          Unlock AI deep-planning & insights.
+      <div className="bg-violet-700 rounded-2xl p-5 text-white shadow-sm">
+        <h4 className="font-heading font-semibold text-sm mb-1 text-white">Upgrade to Pro</h4>
+        <p className="text-xs leading-relaxed text-violet-200 mb-4">
+          Unlock AI deep-planning &amp; insights.
         </p>
-        <Link href={userPlan === "Pro" ? "/subscription" : "/pricing"} className="block w-full bg-white text-[#7c3aed] hover:bg-slate-50 font-semibold py-2 px-4 rounded-xl text-center text-xs shadow-sm transition-colors">
-          {userPlan === "Pro" ? "Manage Pro" : "Upgrade"}
+        <Link href={userPlan === "Pro" ? "/subscription" : "/pricing"} className="block w-full bg-white text-violet-700 hover:bg-violet-50 font-semibold py-2 px-4 rounded-xl text-center text-xs transition-colors">
+          {userPlan === "Pro" ? "Manage plan" : "Upgrade"}
         </Link>
       </div>
 
       {/* User Profile */}
       <div className="flex items-center justify-between border-t border-slate-100 pt-5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#e0e7ff] text-[#4f46e5] font-bold flex items-center justify-center text-xs border border-indigo-100 uppercase select-none">
+          <div className="w-9 h-9 rounded-full bg-violet-50 text-violet-700 font-semibold flex items-center justify-center text-xs border border-violet-100 uppercase select-none">
             {userName.split(" ").map(n => n[0]).join("")}
           </div>
           <div>
             <h5 className="font-semibold text-sm text-slate-900 leading-tight">{userName}</h5>
-            <p className="text-[11px] text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-400 mt-0.5">
               {userPlan === "Pro" ? "Level 12 · Pro" : "Level 1 · Free"}
             </p>
           </div>
@@ -361,7 +357,7 @@ export default function DashboardPage() {
     <div className="min-h-screen flex bg-slate-50 text-slate-800 font-sans relative">
       
       {/* --- DESKTOP SIDEBAR --- */}
-      <aside className="w-[260px] bg-white border-r border-slate-200/60 p-6 flex flex-col justify-between shrink-0 hidden lg:flex">
+      <aside className="w-[260px] bg-white border-r border-slate-200 p-6 flex flex-col justify-between shrink-0 hidden lg:flex">
         <div className="space-y-8">
           <Link href="/" className="flex items-center gap-3">
             <LogoSVG />
@@ -380,7 +376,7 @@ export default function DashboardPage() {
         onClick={() => setIsMobileMenuOpen(false)}
       >
         <aside 
-          className={`w-[260px] max-w-[80vw] bg-white h-full p-6 flex flex-col justify-between shadow-2xl transition-transform duration-300 ${
+          className={`w-[260px] max-w-[80vw] bg-white h-full p-6 flex flex-col justify-between shadow-xl transition-transform duration-300 ${
             isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
           }`}
           onClick={(e) => e.stopPropagation()}
@@ -409,7 +405,7 @@ export default function DashboardPage() {
       <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
         
         {/* Header Row */}
-        <header className="h-20 bg-white border-b border-slate-200/50 flex items-center justify-between px-6 md:px-8 shrink-0">
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 md:px-8 shrink-0">
           <div className="flex items-center gap-3">
             {/* Hamburger Button on Mobile */}
             <button 
@@ -432,7 +428,7 @@ export default function DashboardPage() {
                   ? "Daily Summary" 
                   : `Good morning, ${userName.split(" ")[0]} 👋`}
               </h1>
-              <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 font-medium">
+              <p className="text-xs text-slate-400 mt-0.5 font-medium">
                 {dashboardView === "empty"
                   ? "Let's plan your first focus day"
                   : dashboardView === "summary" 
@@ -444,33 +440,6 @@ export default function DashboardPage() {
 
           <div className="flex items-center gap-3 md:gap-4">
             
-            {/* View Switcher Pill */}
-            <div className="hidden sm:flex items-center bg-slate-100 p-1 rounded-xl shadow-inner text-xs font-semibold">
-              <button 
-                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                  dashboardView === "empty" ? "bg-white text-[#7c3aed] shadow-sm font-bold" : "text-slate-500 hover:text-slate-800"
-                }`}
-                onClick={() => setDashboardView("empty")}
-              >
-                Empty
-              </button>
-              <button 
-                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                  dashboardView === "active" ? "bg-white text-[#7c3aed] shadow-sm font-bold" : "text-slate-500 hover:text-slate-800"
-                }`}
-                onClick={() => setDashboardView("active")}
-              >
-                Active
-              </button>
-              <button 
-                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                  dashboardView === "summary" ? "bg-white text-[#7c3aed] shadow-sm font-bold" : "text-slate-500 hover:text-slate-800"
-                }`}
-                onClick={() => setDashboardView("summary")}
-              >
-                Recap
-              </button>
-            </div>
 
             {dashboardView === "empty" ? (
               <Link 
@@ -506,19 +475,19 @@ export default function DashboardPage() {
                   <input
                     type="text"
                     placeholder="Search tasks..."
-                    className="w-[180px] xl:w-[240px] pl-10 pr-4 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#7c3aed] focus:bg-white focus:ring-2 focus:ring-purple-100 transition-all"
+                    className="w-[180px] xl:w-[240px] pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:bg-white focus:ring-2 focus:ring-violet-100 transition-all"
                   />
                 </div>
 
                 {/* Notification bell */}
-                <button className="w-10 h-10 bg-white border border-slate-200/60 rounded-xl flex items-center justify-center hover:bg-slate-50 transition-colors relative" aria-label="Notifications">
+                <button className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center hover:bg-slate-50 transition-colors relative" aria-label="Notifications">
                   <BellIcon />
                   <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
                 </button>
 
                 {/* Start Focus Button */}
                 <button 
-                  className={`btn btn-primary h-10 px-4 md:px-5 text-xs md:text-sm gap-2 font-bold ${isSprintActive ? "bg-red-500 hover:bg-red-600 shadow-red-500/10" : ""}`}
+                  className={`btn btn-primary h-10 px-4 md:px-5 text-xs md:text-sm gap-2 font-bold transition-all ${isSprintActive ? "bg-red-500 hover:bg-red-600 shadow-red-500/10" : ""}`}
                   onClick={() => setIsSprintActive(!isSprintActive)}
                 >
                   <LightningIcon />
@@ -545,8 +514,8 @@ export default function DashboardPage() {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 
                 {/* Total XP */}
-                <div className="bg-white border border-slate-200/50 rounded-2xl p-5 hover:shadow-md transition-shadow">
-                  <div className="w-9 h-9 rounded-xl bg-purple-50 text-[#7c3aed] flex items-center justify-center mb-4">
+                <div className="sf-stat-card bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md transition-shadow">
+                  <div className="w-9 h-9 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center mb-4">
                     <LightningIcon />
                   </div>
                   <h3 className="font-heading font-extrabold text-2xl text-slate-900 leading-none">0</h3>
@@ -554,17 +523,17 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Focus Time */}
-                <div className="bg-white border border-slate-200/50 rounded-2xl p-5 hover:shadow-md transition-shadow">
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
+                <div className="sf-stat-card bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md transition-shadow">
+                  <div className="w-9 h-9 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center mb-4">
                     <ClockOutlineIcon />
                   </div>
                   <h3 className="font-heading font-extrabold text-2xl text-slate-900 leading-none">0m</h3>
-                  <p className="text-xs text-slate-400 mt-2 font-medium">Focus Time</p>
+                  <p className="text-xs text-slate-400 mt-2 font-medium">Focus time</p>
                 </div>
 
                 {/* Coins */}
-                <div className="bg-white border border-slate-200/50 rounded-2xl p-5 hover:shadow-md transition-shadow">
-                  <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center mb-4">
+                <div className="sf-stat-card bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md transition-shadow">
+                  <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
                     <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                       <circle cx="12" cy="12" r="9"></circle>
                       <path d="M12 7v10M9 9.5h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 0 0 3h6"></path>
@@ -575,8 +544,8 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Productivity */}
-                <div className="bg-white border border-slate-200/50 rounded-2xl p-5 hover:shadow-md transition-shadow">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
+                <div className="sf-stat-card bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md transition-shadow">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-4">
                     <TargetIcon />
                   </div>
                   <h3 className="font-heading font-extrabold text-2xl text-slate-900 leading-none">—</h3>
@@ -589,8 +558,8 @@ export default function DashboardPage() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
                 {/* Left: Dashed No Sprints Card */}
-                <div className="lg:col-span-8 bg-white border-2 border-dashed border-slate-200/80 rounded-3xl p-10 md:p-14 flex flex-col items-center justify-center text-center space-y-4 shadow-sm hover:border-purple-200 transition-colors">
-                  <div className="w-16 h-16 rounded-2xl bg-purple-50 text-[#7c3aed] flex items-center justify-center mb-1 shadow-sm">
+                <div className="lg:col-span-8 bg-white border-2 border-dashed border-slate-200 rounded-3xl p-10 md:p-14 flex flex-col items-center justify-center text-center space-y-4 hover:border-violet-200 transition-colors">
+                  <div className="w-16 h-16 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center mb-1">
                     <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                       <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
                       <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
@@ -623,7 +592,7 @@ export default function DashboardPage() {
                 <div className="lg:col-span-4 space-y-6">
                   
                   {/* No streak yet */}
-                  <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-4">
+                  <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center">
                         <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -648,9 +617,9 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Pro Tip */}
-                  <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-3">
-                    <div className="flex items-center gap-2 text-xs font-bold text-[#7c3aed] uppercase tracking-wider">
-                      <span className="w-5 h-5 rounded-lg bg-purple-50 flex items-center justify-center text-xs font-black">✦</span>
+                  <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-3">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-violet-600">
+                      <span className="w-5 h-5 rounded-lg bg-violet-50 flex items-center justify-center text-xs">✦</span>
                       Pro tip
                     </div>
                     <p className="text-xs text-slate-600 leading-relaxed font-medium">
@@ -664,9 +633,9 @@ export default function DashboardPage() {
 
               {/* Bottom: Get started in 3 steps */}
               <div className="bg-white border border-slate-200/50 rounded-3xl p-6 md:p-8 space-y-6">
-                <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                  <h3 className="font-heading font-extrabold text-base text-slate-900">Get started in 3 steps</h3>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-purple-50 text-[#7c3aed] text-xs font-bold border border-purple-100">
+                <div className="flex items-center justify-between pb-4">
+                  <h3 className="font-heading font-semibold text-sm text-slate-700">Get started in 3 steps</h3>
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-medium">
                     0 of 3
                   </span>
                 </div>
@@ -750,33 +719,22 @@ export default function DashboardPage() {
                 
                 {/* 1. Day Complete Banner Card */}
                 <div className="bg-[#4f46e5] text-white rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-lg border border-purple-500/10">
-                  {/* Floating Tilted Confetti Highlights */}
-                  <div className="absolute top-8 left-[60%] w-2.5 h-5 bg-yellow-400 transform rotate-12 opacity-80 rounded-sm"></div>
-                  <div className="absolute top-20 left-[75%] w-2 h-3.5 bg-blue-300 transform -rotate-45 opacity-60 rounded-sm"></div>
-                  <div className="absolute bottom-12 left-[62%] w-3 h-3 bg-purple-300 rounded-full opacity-70"></div>
-                  <div className="absolute top-10 left-[68%] w-2.5 h-2.5 bg-green-400 transform rotate-45 opacity-75"></div>
-                  <div className="absolute bottom-16 left-[80%] w-2 h-5 bg-pink-400 transform rotate-12 opacity-85 rounded-sm"></div>
-                  <div className="absolute top-16 left-[82%] w-3 h-3 bg-[#818cf8] transform rotate-12 opacity-60"></div>
-
-                  <div className="space-y-4 md:max-w-[70%]">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 border border-white/20 rounded-full text-[10px] font-bold uppercase tracking-wider text-white">
-                      🏆 Goal achieved · 100%
-                    </span>
+                  <div className="space-y-3 md:max-w-[70%]">
                     <h2 className="font-heading font-extrabold text-xl md:text-2xl leading-tight">
                       Day complete. Brilliant work! 🎉
                     </h2>
-                    <p className="text-xs md:text-sm text-white/80 leading-relaxed font-medium">
+                    <p className="text-sm text-white/80 leading-relaxed">
                       You finished all 5 sprints and logged 2h 5m of deep focus. Your streak is now 8 days strong.
                     </p>
                     
-                    <div className="flex flex-wrap gap-2.5 pt-2">
-                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white/10 border border-white/10 rounded-full text-xs font-bold text-white select-none">
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 border border-white/10 rounded-full text-xs font-semibold text-white select-none">
                         ⚡ +320 XP
                       </span>
-                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white/10 border border-white/10 rounded-full text-xs font-bold text-white select-none">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 border border-white/10 rounded-full text-xs font-semibold text-white select-none">
                         🪙 +45 coins
                       </span>
-                      <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white/10 border border-white/10 rounded-full text-xs font-bold text-white select-none">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 border border-white/10 rounded-full text-xs font-semibold text-white select-none">
                         🔥 Streak +1
                       </span>
                     </div>
@@ -800,65 +758,65 @@ export default function DashboardPage() {
                       ></circle>
                     </svg>
                     <div className="absolute text-center text-white">
-                      <div className="font-heading font-extrabold text-2xl">5/5</div>
-                      <div className="text-[8px] uppercase font-bold tracking-widest text-white/60 mt-0.5">sprints</div>
+                      <div className="font-heading font-extrabold text-2xl tabular-nums">5/5</div>
+                      <div className="text-[11px] font-medium text-white/60 mt-0.5">sprints</div>
                     </div>
                   </div>
                 </div>
 
                 {/* 2. Stats cards row */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   
                   {/* Focus Time */}
-                  <div className="bg-white border border-slate-200/50 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
+                  <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="w-9 h-9 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center mb-4">
                       <ClockOutlineIcon />
                     </div>
-                    <h3 className="font-heading font-extrabold text-xl text-slate-900 leading-none">2h 05m</h3>
+                    <h3 className="font-heading font-extrabold text-xl text-slate-900 leading-none tabular-nums">2h 05m</h3>
                     <p className="text-xs text-slate-400 mt-1.5 font-medium">Focus time</p>
                   </div>
 
                   {/* Sprints Done */}
-                  <div className="bg-white border border-slate-200/50 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-9 h-9 rounded-xl bg-purple-50 text-[#7c3aed] flex items-center justify-center mb-4">
+                  <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="w-9 h-9 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center mb-4">
                       <LightningIcon />
                     </div>
-                    <h3 className="font-heading font-extrabold text-xl text-slate-900 leading-none">5 / 5</h3>
+                    <h3 className="font-heading font-extrabold text-xl text-slate-900 leading-none tabular-nums">5 / 5</h3>
                     <p className="text-xs text-slate-400 mt-1.5 font-medium">Sprints done</p>
                   </div>
 
                   {/* Tasks Completed */}
-                  <div className="bg-white border border-slate-200/50 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-9 h-9 rounded-xl bg-green-50 text-green-600 flex items-center justify-center mb-4">
+                  <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-4">
                       <CheckOutlineIcon />
                     </div>
-                    <h3 className="font-heading font-extrabold text-xl text-slate-900 leading-none">6</h3>
+                    <h3 className="font-heading font-extrabold text-xl text-slate-900 leading-none tabular-nums">6</h3>
                     <p className="text-xs text-slate-400 mt-1.5 font-medium">Tasks completed</p>
                   </div>
 
                   {/* Avg Productivity */}
-                  <div className="bg-white border border-slate-200/50 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center mb-4">
+                  <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
                       <TargetIcon />
                     </div>
-                    <h3 className="font-heading font-extrabold text-xl text-slate-900 leading-none">87%</h3>
+                    <h3 className="font-heading font-extrabold text-xl text-slate-900 leading-none tabular-nums">87%</h3>
                     <p className="text-xs text-slate-400 mt-1.5 font-medium">Productivity</p>
                   </div>
 
                 </div>
 
                 {/* 3. Completed Sprints Cards */}
-                <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-6">
-                  <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                    <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider">Completed sprints</h3>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-green-50 border border-green-200/30 text-green-600 text-xs font-bold">
-                      ✓ 5 done
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-heading font-semibold text-sm text-slate-700">Completed sprints</h3>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-green-50 text-green-700 text-xs font-medium">
+                      5 done
                     </span>
                   </div>
 
                   <div className="space-y-4">
                     {/* Item 1 */}
-                    <div className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl hover:bg-slate-50/50 transition-colors">
+                    <div className="flex items-center justify-between p-3.5 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors">
                       <div className="flex items-center gap-3">
                         <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">
                           ✓
@@ -874,7 +832,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Item 2 */}
-                    <div className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl hover:bg-slate-50/50 transition-colors">
+                    <div className="flex items-center justify-between p-3.5 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors">
                       <div className="flex items-center gap-3">
                         <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">
                           ✓
@@ -890,7 +848,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Item 3 */}
-                    <div className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl hover:bg-slate-50/50 transition-colors">
+                    <div className="flex items-center justify-between p-3.5 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors">
                       <div className="flex items-center gap-3">
                         <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">
                           ✓
@@ -906,7 +864,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Item 4 */}
-                    <div className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl hover:bg-slate-50/50 transition-colors">
+                    <div className="flex items-center justify-between p-3.5 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors">
                       <div className="flex items-center gap-3">
                         <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">
                           ✓
@@ -922,7 +880,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Item 5 */}
-                    <div className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl hover:bg-slate-50/50 transition-colors">
+                    <div className="flex items-center justify-between p-3.5 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors">
                       <div className="flex items-center gap-3">
                         <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">
                           ✓
@@ -945,9 +903,9 @@ export default function DashboardPage() {
               <div className="lg:col-span-4 space-y-6">
                 
                 {/* Level Card */}
-                <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-4">
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
                   <div className="flex items-center gap-3.5">
-                    <div className="w-11 h-11 rounded-full bg-[#7c3aed] text-white font-heading font-extrabold flex items-center justify-center select-none shadow-sm">
+                    <div className="w-10 h-10 rounded-full bg-violet-600 text-white font-heading font-bold text-sm flex items-center justify-center select-none">
                       12
                     </div>
                     <div>
@@ -960,7 +918,7 @@ export default function DashboardPage() {
                     <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                       <div className="h-full bg-[#7c3aed] rounded-full transition-all duration-500" style={{ width: "80%" }}></div>
                     </div>
-                    <div className="flex justify-between text-[9px] text-slate-400 font-bold">
+                    <div className="flex justify-between text-xs text-slate-400 font-medium tabular-nums">
                       <span>2,480 XP</span>
                       <span>520 to Lvl 13</span>
                     </div>
@@ -968,11 +926,11 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Tomorrow's Preview Card */}
-                <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-5">
-                  <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider">Tomorrow's preview</h3>
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-5">
+                  <h3 className="font-heading font-semibold text-sm text-slate-700">Tomorrow's preview</h3>
                   
                   <div className="bg-slate-50 border border-slate-200/40 rounded-xl p-4 flex items-start gap-3">
-                    <div className="w-7 h-7 rounded-lg bg-purple-50 text-[#7c3aed] flex items-center justify-center shrink-0 text-xs">
+                    <div className="w-7 h-7 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0 text-xs">
                       📅
                     </div>
                     <div>
@@ -1007,8 +965,8 @@ export default function DashboardPage() {
               <div className="lg:col-span-8 space-y-6">
                 
                 {/* Today's Goal Card */}
-                <div className="bg-gradient-to-r from-[#7c3aed] to-[#6366f1] text-white rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden shadow-lg border border-purple-500/10">
-                  <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
+                <div className="bg-violet-700 text-white rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden shadow-sm">
+
                   
                   {/* Circle Progress SVG */}
                   <div className="relative w-28 h-28 shrink-0 flex items-center justify-center select-none bg-white/5 rounded-full p-2 border border-white/5">
@@ -1028,8 +986,8 @@ export default function DashboardPage() {
                       ></circle>
                     </svg>
                     <div className="absolute text-center">
-                      <div className="font-heading font-extrabold text-xl">{Math.round(progressRatio * 100)}%</div>
-                      <div className="text-[7px] uppercase font-bold tracking-widest text-white/70 mt-0.5">completed</div>
+                      <div className="font-heading font-extrabold text-xl tabular-nums">{Math.round(progressRatio * 100)}%</div>
+                      <div className="text-[11px] font-medium text-white/70 mt-0.5">done</div>
                     </div>
                   </div>
 
@@ -1040,9 +998,9 @@ export default function DashboardPage() {
                     </p>
                     
                     <div className="space-y-1.5 pt-1">
-                      <div className="flex justify-between text-[10px] text-white/60 font-bold uppercase tracking-wider">
-                        <span>Daily Progress</span>
-                        <span>{currentCompletedSprints} / {totalPlannedSprints} Sprints</span>
+                      <div className="flex justify-between text-xs text-white/60 font-medium tabular-nums">
+                        <span>Progress</span>
+                        <span>{currentCompletedSprints} / {totalPlannedSprints} sprints</span>
                       </div>
                       <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
                         <div className="h-full bg-white rounded-full transition-all duration-500" style={{ width: `${progressRatio * 100}%` }}></div>
@@ -1052,8 +1010,8 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Sprints checklist Widget */}
-                <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-6">
-                  <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-3">Upcoming Tasks</h3>
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-5">
+                  <h3 className="font-heading font-semibold text-sm text-slate-700 pb-3 border-b border-slate-100">Upcoming tasks</h3>
                   
                   <div className="space-y-3.5">
                     {tasks.map(task => (
@@ -1072,10 +1030,10 @@ export default function DashboardPage() {
 
                         <div className="flex items-center gap-3">
                           <span className="text-[10px] md:text-xs text-slate-400 font-medium">{task.duration}</span>
-                          <span className={`px-2.5 py-0.5 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-wider ${
-                            task.priority === "High" ? "bg-red-50 text-red-500 border border-red-100/40" :
-                            task.priority === "Medium" ? "bg-orange-50 text-orange-500 border border-orange-100/40" :
-                            "bg-green-50 text-green-500 border border-green-100/40"
+                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            task.priority === "High" ? "bg-red-50 text-red-600" :
+                            task.priority === "Medium" ? "bg-amber-50 text-amber-700" :
+                            "bg-emerald-50 text-emerald-700"
                           }`}>
                             {task.priority}
                           </span>
@@ -1091,48 +1049,48 @@ export default function DashboardPage() {
               <div className="lg:col-span-4 space-y-6">
                 
                 {/* Sprint Timer Widget */}
-                <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-5">
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider">Current Sprint</h3>
-                    <span className={`w-2.5 h-2.5 rounded-full ${isSprintActive ? "bg-red-500 animate-ping" : "bg-slate-300"}`}></span>
+                    <h3 className="font-heading font-semibold text-sm text-slate-700">Current sprint</h3>
+                    <span className={`w-2 h-2 rounded-full transition-colors duration-300 ${isSprintActive ? "bg-emerald-400 sf-live-dot" : "bg-slate-300"}`}></span>
                   </div>
 
-                  <div className="bg-slate-50/50 border border-slate-200/50 rounded-2xl p-5 text-center space-y-3">
-                    <h4 className="font-bold text-xs md:text-sm text-slate-800 leading-tight">OAuth Provider Integrations</h4>
-                    <p className="font-mono font-bold text-3xl md:text-4xl text-[#7c3aed] leading-none py-2 tracking-tight">
-                      {isSprintActive ? `Ticking: ${formatTimer(sprintTimeRemaining)}` : "25:00"}
+                  <div className="text-center space-y-3 py-2">
+                    <h4 className="font-medium text-sm text-slate-600 leading-tight">OAuth Provider Integrations</h4>
+                    <p className="font-mono font-bold text-4xl text-violet-600 leading-none tracking-tight tabular-nums">
+                      {isSprintActive ? formatTimer(sprintTimeRemaining) : "25:00"}
                     </p>
                     
                     <button 
-                      className={`w-full btn h-11 text-xs md:text-sm font-extrabold gap-2 border transition-all ${
+                      className={`w-full btn h-11 text-sm font-semibold gap-2 border transition-all ${
                         isSprintActive 
                           ? "bg-red-50 border-red-200 text-red-600 hover:bg-red-100/60" 
-                          : "bg-purple-600 border-purple-600 text-white hover:bg-purple-700 shadow-md shadow-purple-500/10"
+                          : "bg-violet-700 border-violet-700 text-white hover:bg-violet-800 shadow-sm"
                       }`}
                       onClick={() => setIsSprintActive(!isSprintActive)}
                     >
-                      {isSprintActive ? "Pause Sprint" : "Start Sprint"}
+                      {isSprintActive ? "Pause" : "Start sprint"}
                     </button>
                   </div>
                 </div>
 
                 {/* Level Up widget */}
-                <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-4">
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-11 h-11 rounded-full bg-[#7c3aed] text-white font-heading font-extrabold flex items-center justify-center select-none shadow-sm">
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-violet-600 text-white font-heading font-bold text-sm flex items-center justify-center select-none">
                       12
                     </div>
                     <div>
-                      <h4 className="font-bold text-xs md:text-sm text-slate-900 leading-tight">Level 12</h4>
-                      <p className="text-[10px] text-slate-400 mt-0.5">{3000 - xp} XP until Level 13</p>
+                      <h4 className="font-semibold text-sm text-slate-800 leading-tight">Level 12</h4>
+                      <p className="text-xs text-slate-400 mt-0.5 tabular-nums">{3000 - xp} XP to next level</p>
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
                     <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#7c3aed] rounded-full" style={{ width: `${(xp / 3000) * 100}%` }}></div>
+                      <div className="h-full bg-violet-600 rounded-full" style={{ width: `${(xp / 3000) * 100}%` }}></div>
                     </div>
-                    <div className="flex justify-between text-[9px] text-slate-400 font-bold">
+                    <div className="flex justify-between text-xs text-slate-400 font-medium tabular-nums">
                       <span>{xp} XP</span>
                       <span>3,000 XP</span>
                     </div>
@@ -1140,17 +1098,20 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Streak widget */}
-                <div className="bg-white border border-slate-200/50 rounded-2xl p-6">
-                  <h3 className="font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider mb-4">7-day streak 🔥</h3>
+                <div className="bg-white border border-slate-200 rounded-2xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-heading font-semibold text-sm text-slate-700">Streak</h3>
+                    <span className="text-sm">🔥 {streak} days</span>
+                  </div>
                   <div className="grid grid-cols-6 gap-2">
                     {["M", "T", "W", "T", "F", "S"].map((day, idx) => (
-                      <div key={idx} className="flex flex-col items-center gap-2">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${
-                          streakDays[idx] ? "bg-[#7c3aed] text-white shadow-sm" : "bg-slate-100 text-slate-400 border border-slate-200/40"
+                      <div key={idx} className="flex flex-col items-center gap-1.5">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                          streakDays[idx] ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-300 border border-slate-200"
                         }`}>
                           {streakDays[idx] ? "✓" : ""}
                         </div>
-                        <span className="text-[10px] font-bold text-slate-400">{day}</span>
+                        <span className="text-xs font-medium text-slate-400">{day}</span>
                       </div>
                     ))}
                   </div>
