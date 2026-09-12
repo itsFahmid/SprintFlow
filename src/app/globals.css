@@ -47,6 +47,43 @@
   --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* --- BROWSER SURFACES & ACCESSIBILITY --- */
+::selection {
+  background-color: #7c3aed;
+  color: #ffffff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+input, textarea {
+  caret-color: var(--primary);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
 /* --- CUSTOM CLASS IMPLEMENTATIONS (MATCHING SCREENSHOTS) --- */
 .container {
   width: 100%;
@@ -1181,16 +1218,24 @@
 }
 
 .faq-answer {
-  max-height: 0;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.faq-item.active .faq-answer {
+  grid-template-rows: 1fr;
+}
+
+.faq-answer > div {
   overflow: hidden;
-  transition: max-height var(--transition-slow);
 }
 
 .faq-answer-content {
   padding: 0 24px 24px;
   font-size: 0.95rem;
   line-height: 1.6;
-  color: var(--gray-500);
+  color: var(--gray-600);
 }
 
 /* --- CTA BANNER --- */
