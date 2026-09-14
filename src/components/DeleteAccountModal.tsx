@@ -22,23 +22,40 @@ export default function DeleteAccountModal({
 }: DeleteAccountModalProps) {
   const router = useRouter();
   const [confirmText, setConfirmText] = useState("");
+  const [password, setPassword] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
 
   if (!isOpen) return null;
 
   const isConfirmed = confirmText.trim().toUpperCase() === "DELETE";
+  const canSubmit = isConfirmed && password.trim().length > 0 && !isDeleting;
 
   const handleDelete = async () => {
-    if (!isConfirmed) return;
+    if (!canSubmit) return;
     setIsDeleting(true);
     setError("");
 
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      const res = await fetch("/api/user", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          confirmation: confirmText,
+          password
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Failed to delete account. Please try again.");
+        setIsDeleting(false);
+        return;
+      }
+
       router.push("/account-deleted");
     } catch {
-      setError("Failed to delete account. Please try again.");
+      setError("Failed to delete account. Please check your network and try again.");
       setIsDeleting(false);
     }
   };
@@ -95,19 +112,34 @@ export default function DeleteAccountModal({
           </div>
         )}
 
-        {/* Confirmation Input */}
-        <div className="space-y-1.5 text-left pt-1">
-          <label className="block text-xs font-bold text-slate-700">
-            Type DELETE to confirm
-          </label>
-          <input
-            type="text"
-            value={confirmText}
-            onChange={(e) => setConfirmText(e.target.value)}
-            className="w-full px-4 py-2.5 bg-white border-2 border-red-500 rounded-xl text-xs md:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-100 transition-all uppercase tracking-wider"
-            placeholder="DELETE"
-            autoFocus
-          />
+        {/* Inputs */}
+        <div className="space-y-3 text-left pt-1">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-slate-700">
+              Type DELETE to confirm
+            </label>
+            <input
+              type="text"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              className="w-full px-4 py-2.5 bg-white border-2 border-red-500 rounded-xl text-xs md:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-100 transition-all uppercase tracking-wider"
+              placeholder="DELETE"
+              autoFocus
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-slate-700">
+              Re-enter your password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs md:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-100 transition-all"
+              placeholder="Your password"
+            />
+          </div>
         </div>
 
         {/* Action Buttons */}
@@ -123,7 +155,7 @@ export default function DeleteAccountModal({
           <button
             type="button"
             onClick={handleDelete}
-            disabled={!isConfirmed || isDeleting}
+            disabled={!canSubmit}
             className="flex-1 h-11 bg-red-600 hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-red-500/20 transition-all cursor-pointer"
           >
             <span>🗑</span>
