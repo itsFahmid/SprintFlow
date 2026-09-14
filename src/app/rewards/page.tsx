@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // --- SVG NAVIGATION & WIDGET ICONS ---
 const DashboardIcon = () => (
@@ -219,7 +220,8 @@ export default function RewardsPage() {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <Link href="/settings" className="p-1 rounded-lg hover:bg-slate-100 transition-colors" title="Settings">
+          <ThemeToggle className="!p-1 !h-8 !w-8 !rounded-lg" />
+          <Link href="/settings" className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Settings">
             <SettingsIcon />
           </Link>
           <button onClick={handleLogout} className="p-1 rounded-lg hover:bg-red-50 transition-colors group" aria-label="Log out" title="Log out">
@@ -319,6 +321,7 @@ export default function RewardsPage() {
           </div>
 
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             {/* Coins Counter badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 border border-orange-200 bg-orange-50/50 text-orange-600 rounded-xl text-xs md:text-sm font-bold shadow-sm">
               <CoinOutlineIcon />

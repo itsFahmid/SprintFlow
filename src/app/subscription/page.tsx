@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ReceiptModal, { ReceiptData } from "@/components/ReceiptModal";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // --- SVG ICONS ---
 const CrownIcon = () => (
@@ -240,6 +241,7 @@ export default function SubscriptionPage() {
           </div>
         </div>
         <div className="flex items-center gap-1">
+          <ThemeToggle className="!p-1 !h-8 !w-8 !rounded-lg" />
           <SettingsIcon />
           <button onClick={handleLogout} className="p-1 rounded-lg hover:bg-red-50 transition-colors group" aria-label="Log out" title="Log out">
             <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className="text-slate-400 group-hover:text-red-500 transition-colors">
@@ -292,6 +294,7 @@ export default function SubscriptionPage() {
               Manage your Pro pass and payment history
             </p>
           </div>
+          <ThemeToggle />
         </header>
 
         {/* Dashboard Grid */}

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import SprintEditModal, { EditableSprint } from "@/components/SprintEditModal";
 import NotificationCenter from "@/components/NotificationCenter";
 import TaskDetailDrawer, { TaskDetailData } from "@/components/TaskDetailDrawer";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // --- SVG NAVIGATION & ACTION ICONS ---
 const DashboardIcon = () => (
@@ -580,7 +581,8 @@ export default function TasksPage() {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <Link href="/settings" className="p-1 rounded-lg hover:bg-slate-100 transition-colors" title="Settings">
+          <ThemeToggle className="!p-1 !h-8 !w-8 !rounded-lg" />
+          <Link href="/settings" className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Settings">
             <SettingsIcon />
           </Link>
           <button onClick={handleLogout} className="p-1 rounded-lg hover:bg-red-50 transition-colors group" aria-label="Log out" title="Log out">
@@ -726,6 +728,7 @@ export default function TasksPage() {
               </button>
             )}
 
+            <ThemeToggle />
             <NotificationCenter />
             
             {viewState === "breakdown" && (

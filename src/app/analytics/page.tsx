@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // --- SVG NAVIGATION & WIDGET ICONS ---
 const DashboardIcon = () => (
@@ -267,7 +268,8 @@ export default function AnalyticsPage() {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <Link href="/settings" className="p-1 rounded-lg hover:bg-slate-100 transition-colors" title="Settings">
+          <ThemeToggle className="!p-1 !h-8 !w-8 !rounded-lg" />
+          <Link href="/settings" className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Settings">
             <SettingsIcon />
           </Link>
           <button onClick={handleLogout} className="p-1 rounded-lg hover:bg-red-50 transition-colors group" aria-label="Log out" title="Log out">
@@ -414,6 +416,8 @@ export default function AnalyticsPage() {
                 Year
               </button>
             </div>
+
+            <ThemeToggle />
           </div>
         </header>
 

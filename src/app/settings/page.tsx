@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import ChangePasswordModal from "@/components/ChangePasswordModal";
 import DeleteAccountModal from "@/components/DeleteAccountModal";
 import LogoutConfirmModal from "@/components/LogoutConfirmModal";
+import ThemeToggle from "@/components/ThemeToggle";
+import { useTheme } from "@/components/ThemeProvider";
 
 // --- SVG NAVIGATION ICONS ---
 const DashboardIcon = () => (
@@ -81,10 +83,11 @@ const LogoSVG = () => (
   </svg>
 );
 
-type SettingsTab = "account" | "focus" | "notifications" | "privacy";
+type SettingsTab = "account" | "appearance" | "focus" | "notifications" | "privacy";
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<SettingsTab>("account");
   const [isSaving, setIsSaving] = useState(false);
@@ -363,7 +366,8 @@ export default function SettingsPage() {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={() => setActiveTab("account")} className="p-1 rounded-lg hover:bg-slate-100 transition-colors" title="Settings">
+          <ThemeToggle className="!p-1 !h-8 !w-8 !rounded-lg" />
+          <button onClick={() => setActiveTab("appearance")} className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Appearance Settings">
             <SettingsIcon />
           </button>
           <button onClick={handleLogout} className="p-1 rounded-lg hover:bg-red-50 transition-colors group" aria-label="Log out" title="Log out">
@@ -412,12 +416,15 @@ export default function SettingsPage() {
             <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 font-medium">Manage your account, focus rhythm, notifications and data</p>
           </div>
 
-          {saveToast && (
-            <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 animate-fade-in">
-              <span>✓</span>
-              <span>Changes saved successfully</span>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            {saveToast && (
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 animate-fade-in">
+                <span>✓</span>
+                <span>Changes saved successfully</span>
+              </div>
+            )}
+          </div>
         </header>
 
         {/* Settings Grid (Sidebar Nav + Main Content Card) */}
@@ -433,12 +440,25 @@ export default function SettingsPage() {
                 onClick={() => setActiveTab("account")}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
                   activeTab === "account"
-                    ? "bg-purple-50 text-[#7c3aed] shadow-sm"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                    ? "bg-purple-50 dark:bg-violet-950/40 text-[#7c3aed] dark:text-violet-400 shadow-sm"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/50"
                 }`}
               >
                 <span className="text-sm">👤</span>
                 <span>Account</span>
+              </button>
+
+              {/* Appearance & Theme */}
+              <button
+                onClick={() => setActiveTab("appearance")}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                  activeTab === "appearance"
+                    ? "bg-purple-50 dark:bg-violet-950/40 text-[#7c3aed] dark:text-violet-400 shadow-sm"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                }`}
+              >
+                <span className="text-sm">🌓</span>
+                <span>Appearance & Theme</span>
               </button>
 
               {/* Focus & Pomodoro */}
@@ -617,6 +637,115 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* --- SETTINGS — APPEARANCE & THEME --- */}
+              {/* ========================================================================= */}
+              {activeTab === "appearance" && (
+                <div className="space-y-8 animate-fade-in">
+                  <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+                    <div>
+                      <h2 className="font-heading font-extrabold text-xl text-slate-900 dark:text-white">Appearance & Theme</h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Customize the visual theme and contrast across SprintFlow</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <span className="font-extrabold text-[10px] text-slate-400 tracking-wider uppercase">COLOR THEME</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {/* Light */}
+                      <button
+                        type="button"
+                        onClick={() => setTheme("light")}
+                        className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                          theme === "light"
+                            ? "border-violet-600 ring-2 ring-violet-500/20 bg-violet-50/40 dark:bg-violet-950/20 shadow-sm"
+                            : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900"
+                        }`}
+                      >
+                        <div className="h-24 rounded-xl bg-slate-100 border border-slate-200 p-2.5 flex flex-col justify-between mb-3 shadow-inner">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                            <div className="w-12 h-2 rounded-full bg-slate-200" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="w-3/4 h-2 rounded bg-violet-400" />
+                            <div className="w-1/2 h-2 rounded bg-slate-300" />
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-bold text-sm text-slate-900 dark:text-white">Light Mode</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Daylight clarity</div>
+                          </div>
+                          {theme === "light" && <span className="text-violet-600 dark:text-violet-400 text-sm font-bold">✓</span>}
+                        </div>
+                      </button>
+
+                      {/* Dark */}
+                      <button
+                        type="button"
+                        onClick={() => setTheme("dark")}
+                        className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                          theme === "dark"
+                            ? "border-violet-600 ring-2 ring-violet-500/20 bg-violet-50/40 dark:bg-violet-950/20 shadow-sm"
+                            : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900"
+                        }`}
+                      >
+                        <div className="h-24 rounded-xl bg-slate-950 border border-slate-800 p-2.5 flex flex-col justify-between mb-3 shadow-inner">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-slate-700" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-slate-700" />
+                            <div className="w-12 h-2 rounded-full bg-slate-800" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="w-3/4 h-2 rounded bg-violet-500" />
+                            <div className="w-1/2 h-2 rounded bg-slate-700" />
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-bold text-sm text-slate-900 dark:text-white">Dark Mode</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Obsidian focus</div>
+                          </div>
+                          {theme === "dark" && <span className="text-violet-600 dark:text-violet-400 text-sm font-bold">✓</span>}
+                        </div>
+                      </button>
+
+                      {/* System */}
+                      <button
+                        type="button"
+                        onClick={() => setTheme("system")}
+                        className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                          theme === "system"
+                            ? "border-violet-600 ring-2 ring-violet-500/20 bg-violet-50/40 dark:bg-violet-950/20 shadow-sm"
+                            : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900"
+                        }`}
+                      >
+                        <div className="h-24 rounded-xl bg-gradient-to-r from-slate-100 to-slate-900 border border-slate-300 dark:border-slate-700 p-2.5 flex flex-col justify-between mb-3 shadow-inner">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-slate-400" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-slate-400" />
+                            <div className="w-12 h-2 rounded-full bg-slate-300 dark:bg-slate-700" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="w-3/4 h-2 rounded bg-violet-500" />
+                            <div className="w-1/2 h-2 rounded bg-slate-400" />
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-bold text-sm text-slate-900 dark:text-white">System Auto</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Match OS theme</div>
+                          </div>
+                          {theme === "system" && <span className="text-violet-600 dark:text-violet-400 text-sm font-bold">✓</span>}
+                        </div>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
 

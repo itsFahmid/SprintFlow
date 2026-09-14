@@ -8,6 +8,7 @@ import NotificationCenter from "@/components/NotificationCenter";
 import SprintInterruptedModal from "@/components/SprintInterruptedModal";
 import SprintDetailDrawer, { SprintDetailData } from "@/components/SprintDetailDrawer";
 import CarryOverModal from "@/components/CarryOverModal";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // --- SVG ICONS ---
 const DashboardIcon = () => (
@@ -346,9 +347,12 @@ export default function SprintsPage() {
             <p className="text-[11px] text-slate-400 mt-0.5">Level 12 · Pro</p>
           </div>
         </div>
-        <Link href="/settings" className="p-1 rounded-lg hover:bg-slate-100 transition-colors" title="Settings">
-          <SettingsIcon />
-        </Link>
+        <div className="flex items-center gap-1">
+          <ThemeToggle className="!p-1 !h-8 !w-8 !rounded-lg" />
+          <Link href="/settings" className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Settings">
+            <SettingsIcon />
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -424,6 +428,7 @@ export default function SprintsPage() {
                 <span>➔</span>
               </button>
 
+              <ThemeToggle />
               <NotificationCenter />
             </div>
           </header>

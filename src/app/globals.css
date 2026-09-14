@@ -47,6 +47,28 @@
   --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* --- SPRINTFLOW DARK MODE OVERRIDES --- */
+html.dark {
+  --gray-50: #0b0f19;
+  --gray-100: #131b2e;
+  --gray-200: #1e293b;
+  --gray-300: #334155;
+  --gray-400: #64748b;
+  --gray-500: #94a3b8;
+  --gray-600: #cbd5e1;
+  --gray-900: #f8fafc;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+  --shadow-app: 0 30px 60px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+html.dark body {
+  background-color: #0b0f19;
+  color: #cbd5e1;
+}
+
 /* --- BROWSER SURFACES & ACCESSIBILITY --- */
 ::selection {
   background-color: #7c3aed;
@@ -1666,6 +1688,191 @@ input, textarea {
 /* Sprint live dot */
 .sf-live-dot {
   animation: sf-live-dot 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* --- DARK MODE UI UTILITIES & COMPONENT OVERRIDES --- */
+html.dark .header {
+  background-color: rgba(11, 15, 25, 0.88);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .header .logo,
+html.dark .header .nav-link:hover,
+html.dark .login-link:hover {
+  color: #f8fafc;
+}
+
+html.dark .nav-link,
+html.dark .login-link {
+  color: #94a3b8;
+}
+
+html.dark .how-it-works,
+html.dark .features,
+html.dark .gamification,
+html.dark .pricing,
+html.dark .testimonials,
+html.dark .faq,
+html.dark .cta-banner-section {
+  background-color: #0b0f19;
+}
+
+html.dark .step-card,
+html.dark .feature-card,
+html.dark .pricing-card,
+html.dark .testimonial-card,
+html.dark .faq-item,
+html.dark .gamified-preview-card {
+  background-color: #131b2e;
+  border-color: #1e293b;
+  color: #f8fafc;
+}
+
+html.dark .step-card:hover,
+html.dark .feature-card:hover,
+html.dark .testimonial-card:hover {
+  background-color: #182238;
+  border-color: #334155;
+}
+
+html.dark .step-icon-box,
+html.dark .feature-icon-box {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+html.dark .section-header h2,
+html.dark .step-card h3,
+html.dark .feature-card h3,
+html.dark .pricing-card h3,
+html.dark .gamification-info h2,
+html.dark .faq-question-btn h3 {
+  color: #f8fafc;
+}
+
+html.dark .section-header p,
+html.dark .step-card p,
+html.dark .feature-card p,
+html.dark .gamification-subtitle,
+html.dark .faq-answer-content {
+  color: #94a3b8;
+}
+
+html.dark .btn-secondary {
+  background-color: #131b2e;
+  color: #f1f5f9;
+  border-color: #1e293b;
+}
+
+html.dark .btn-secondary:hover {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #ffffff;
+}
+
+html.dark .modal-window {
+  background-color: #131b2e;
+  border-color: #1e293b;
+  color: #f8fafc;
+}
+
+html.dark .modal-header {
+  border-bottom-color: #1e293b;
+}
+
+html.dark .modal-textarea {
+  background-color: #0b0f19;
+  border-color: #1e293b;
+  color: #f8fafc;
+}
+
+html.dark .modal-sprint-item {
+  background-color: #0b0f19;
+  border-color: #1e293b;
+  color: #f8fafc;
+}
+
+/* Workspace Layout & Components Dark Mode */
+html.dark aside {
+  background-color: #0f172a;
+  border-color: #1e293b;
+}
+
+html.dark main {
+  background-color: #0b0f19;
+  color: #e2e8f0;
+}
+
+html.dark header:not(.header) {
+  background-color: #0f172a;
+  border-color: #1e293b;
+}
+
+html.dark .bg-white {
+  background-color: #131b2e !important;
+}
+
+html.dark .bg-slate-50 {
+  background-color: #0b0f19 !important;
+}
+
+html.dark .bg-slate-100 {
+  background-color: #1e293b !important;
+}
+
+html.dark .border-slate-200,
+html.dark .border-slate-200\/60,
+html.dark .border-slate-200\/50,
+html.dark .border-slate-100 {
+  border-color: #1e293b !important;
+}
+
+html.dark .text-slate-900,
+html.dark .text-slate-800 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-700,
+html.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-slate-500,
+html.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: #131b2e;
+  border-color: #1e293b;
+  color: #f8fafc;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b;
+}
+
+html.dark .hover\:bg-slate-50:hover,
+html.dark .hover\:bg-slate-100:hover,
+html.dark .hover\:bg-slate-100\/50:hover {
+  background-color: #1e293b !important;
+}
+
+html.dark .drawer-window,
+html.dark .drawer-container {
+  background-color: #0f172a;
+  border-color: #1e293b;
+  color: #f8fafc;
+}
+
+html.dark .notification-popover {
+  background-color: #0f172a;
+  border-color: #1e293b;
+  color: #f8fafc;
 }
 
 /* Sidebar nav icon: 1px slide on hover — snappy, Operate-appropriate */
