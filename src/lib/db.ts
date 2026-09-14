@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import postgres from "postgres";
 
 const DB_FILE_PATH = path.join(process.cwd(), "db.json");
@@ -319,7 +320,7 @@ export async function createUser(name: string, email: string, passwordHash: stri
   ];
 
   const newUser: UserRecord = {
-    id: Math.random().toString(36).substring(2, 9),
+    id: crypto.randomUUID(),
     name,
     email,
     passwordHash,
@@ -456,10 +457,11 @@ export async function updateUserSubscription(userId: string, subscription: Subsc
 
 // --- SESSION OPERATIONS ---
 
-export async function createSession(userId: string): Promise<SessionRecord> {
+export async function createSession(userId: string, rememberMe: boolean = false): Promise<SessionRecord> {
   await ensureDbInitialized();
-  const token = "sess_" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const token = "sess_" + crypto.randomBytes(32).toString("hex");
+  const durationMs = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+  const expiresAt = new Date(Date.now() + durationMs).toISOString();
   const session: SessionRecord = { token, userId, expiresAt };
 
   if (sql) {
@@ -503,7 +505,7 @@ export async function getSession(token: string): Promise<SessionRecord | null> {
         expiresAt: new Date(rows[0].expires_at).toISOString()
       } as SessionRecord;
 
-      // Check expiration
+      // Check expiration server-side
       if (new Date(session.expiresAt).getTime() < Date.now()) {
         await deleteSession(token);
         return null;
@@ -543,3 +545,34 @@ export async function deleteSession(token: string): Promise<void> {
     saveLocalDb(db);
   }
 }
+
+export async function deleteUser(userId: string): Promise<boolean> {
+  await ensureDbInitialized();
+  if (sql) {
+    try {
+      await sql`
+        DELETE FROM sprintflow_sessions 
+        WHERE user_id = ${userId};
+      `;
+      await sql`
+        DELETE FROM sprintflow_users 
+        WHERE id = ${userId};
+      `;
+      return true;
+    } catch (err) {
+      console.error("deleteUser Postgres error:", err);
+      return false;
+    }
+  } else {
+    const db = getLocalDb();
+    db.sessions = db.sessions.filter(s => s.userId !== userId);
+    const userIndex = db.users.findIndex(u => u.id === userId);
+    if (userIndex !== -1) {
+      db.users.splice(userIndex, 1);
+      saveLocalDb(db);
+      return true;
+    }
+    return false;
+  }
+}
+

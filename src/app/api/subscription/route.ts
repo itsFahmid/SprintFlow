@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import crypto from "crypto";
 import { getSession, getUserById, updateUserSubscription, SubscriptionRecord, PaymentHistoryItem } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
@@ -121,11 +122,11 @@ export async function POST(req: NextRequest) {
       
       const newEndDate = new Date(baseStartDate.getTime() + durationMonths * 30.5 * 24 * 60 * 60 * 1000);
       
-      const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase() + "-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+      const randomSuffix = crypto.randomBytes(3).toString("hex").toUpperCase() + "-" + crypto.randomBytes(3).toString("hex").toUpperCase();
       const txId = `SF-${randomSuffix}`;
 
       const historyItem: PaymentHistoryItem = {
-        id: "tx_" + Date.now(),
+        id: "tx_" + crypto.randomUUID(),
         plan: `Pro · ${durationMonths}-Month pass`,
         durationMonths,
         amount,
