@@ -120,7 +120,7 @@ interface FilterData {
 export default function AnalyticsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState("Fahim Siddique");
+  const [userName, setUserName] = useState("");
   const [timeFilter, setTimeFilter] = useState<"week" | "month" | "year">("week");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hasSprints, setHasSprints] = useState(false);
@@ -135,7 +135,7 @@ export default function AnalyticsPage() {
           return;
         }
         const data = await res.json();
-        setUserName(data.user.name);
+        setUserName(data.user.name || "User");
         const sprintCount = data.user.planner?.completedSprintsCount || 0;
         setHasSprints(sprintCount > 0);
         setViewMode(sprintCount > 0 ? "insights" : "empty");
