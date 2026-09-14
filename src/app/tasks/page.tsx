@@ -165,7 +165,7 @@ export default function TasksPage() {
   const [sprints, setSprints] = useState<BreakdownSprint[]>([]);
   const [editingSprint, setEditingSprint] = useState<EditableSprint | null>(null);
 
-  const [userName, setUserName] = useState("Fahim Siddique");
+  const [userName, setUserName] = useState("");
   const [loading, setLoading] = useState(true);
 
   // Initialize data on mount

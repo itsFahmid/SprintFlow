@@ -38,8 +38,8 @@ interface SessionExpiredModalProps {
 export default function SessionExpiredModal({
   isOpen,
   onClose,
-  userName = "Fahim Siddique",
-  userEmail = "fahimsahmed01@gmail.com",
+  userName = "User",
+  userEmail = "",
   onSuccess
 }: SessionExpiredModalProps) {
   const router = useRouter();

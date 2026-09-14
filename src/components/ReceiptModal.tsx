@@ -109,9 +109,9 @@ export default function ReceiptModal({ isOpen, onClose, receipt }: ReceiptModalP
             <div className="space-y-1.5">
               <span className="font-extrabold text-[10px] uppercase tracking-wider text-slate-400">Billed To</span>
               <h5 className="font-bold text-slate-900 text-sm leading-tight">
-                {receipt.customerName || "Fahim Siddique"}
+                {receipt.customerName || "Customer"}
               </h5>
-              <p className="text-slate-500">{receipt.customerEmail || "fahim@sprintflow.io"}</p>
+              <p className="text-slate-500">{receipt.customerEmail || ""}</p>
               <p className="text-slate-500 font-medium">{receipt.method}</p>
             </div>
 

@@ -113,7 +113,7 @@ export default function PlannerPage() {
 
   // --- STATE ---
   const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState("Fahim Siddique");
+  const [userName, setUserName] = useState("");
   const [completedSprints, setCompletedSprints] = useState(1);
   const [totalPlannedSprints, setTotalPlannedSprints] = useState(5);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -128,7 +128,7 @@ export default function PlannerPage() {
           return;
         }
         const data = await res.json();
-        setUserName(data.user.name);
+        setUserName(data.user.name || "User");
         setCompletedSprints(data.user.planner.completedSprintsCount || 0);
         setTotalPlannedSprints(data.user.settings.dailyGoal || 5);
         setLoading(false);

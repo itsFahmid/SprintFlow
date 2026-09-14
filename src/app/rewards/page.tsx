@@ -101,7 +101,7 @@ export default function RewardsPage() {
   const router = useRouter();
   // --- STATE ---
   const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState("Fahim Siddique");
+  const [userName, setUserName] = useState("");
   const [xp, setXp] = useState(2480);
   const [coins, setCoins] = useState(240);
   const [streak, setStreak] = useState(5);
@@ -123,7 +123,7 @@ export default function RewardsPage() {
           return;
         }
         const data = await res.json();
-        setUserName(data.user.name);
+        setUserName(data.user.name || "User");
         setXp(data.user.rewards.xp);
         setCoins(data.user.rewards.coins);
         setStreak(data.user.rewards.streak);

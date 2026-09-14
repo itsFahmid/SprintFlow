@@ -142,7 +142,7 @@ export default function SignupPage() {
                   id="name-input"
                   required
                   className="block w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#7c3aed] focus:ring-2 focus:ring-purple-100 transition-all"
-                  placeholder="Fahim Siddique"
+                  placeholder="Alex Morgan"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />

@@ -123,7 +123,7 @@ export default function SprintsPage() {
   const [showCarryOverModal, setShowCarryOverModal] = useState(false);
 
   // User Profile & Metrics
-  const [userName, setUserName] = useState("Fahim Siddique");
+  const [userName, setUserName] = useState("");
   const [xp, setXp] = useState(2480);
   const [coins, setCoins] = useState(240);
   const [rewardsHistory, setRewardsHistory] = useState<any[]>([]);
@@ -145,7 +145,7 @@ export default function SprintsPage() {
           return;
         }
         const data = await res.json();
-        setUserName(data.user.name || "Fahim Siddique");
+        setUserName(data.user.name || "User");
         
         const sprintCount = data.user.planner.completedSprintsCount || 0;
         setCompletedCount(sprintCount);

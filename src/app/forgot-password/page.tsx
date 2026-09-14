@@ -50,9 +50,9 @@ export default function ForgotPasswordPage() {
   // Step state: "forgot" (Screen 34) | "check_email" (Screen 35) | "reset" (Screen 36) | "success" (Screen 37)
   const [step, setStep] = useState<"forgot" | "check_email" | "reset" | "success">("forgot");
 
-  const [email, setEmail] = useState("fahimsahmed01@gmail.com");
-  const [password, setPassword] = useState("Password123!");
-  const [confirmPassword, setConfirmPassword] = useState("Password123!");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);

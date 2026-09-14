@@ -94,7 +94,7 @@ const LogoSVG = () => (
 export default function PricingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState("Fahim Siddique");
+  const [userName, setUserName] = useState("");
   const [selectedPlan, setSelectedPlan] = useState<"3_months" | "1_month">("3_months");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentPlan, setCurrentPlan] = useState("Free");
@@ -108,7 +108,7 @@ export default function PricingPage() {
           return;
         }
         const data = await res.json();
-        setUserName(data.user.name);
+        setUserName(data.user.name || "User");
         if (data.user.subscription?.plan) {
           setCurrentPlan(data.user.subscription.plan);
         }

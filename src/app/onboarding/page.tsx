@@ -64,6 +64,17 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [userName, setUserName] = useState("");
 
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.user?.name) {
+          setUserName(data.user.name);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // Rhythm setup state variables
   const [sprintLength, setSprintLength] = useState(25);
   const [breakLength, setBreakLength] = useState(5);
@@ -531,7 +542,7 @@ export default function OnboardingPage() {
               </div>
               
               <h2 className="font-heading font-extrabold text-2xl md:text-3xl text-slate-800 leading-tight">
-                You're all set, Fahim! 🎉
+                {userName ? `You're all set, ${userName}! 🎉` : "You're all set! 🎉"}
               </h2>
               <p className="text-slate-500 text-xs md:text-sm font-semibold max-w-md mx-auto leading-normal">
                 Your focus space is ready. Add your first tasks and let AI build today's plan.

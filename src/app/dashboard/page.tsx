@@ -134,8 +134,8 @@ export default function DashboardPage() {
 
   // --- STATE MANAGEMENT ---
   const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState("Fahim Siddique");
-  const [userEmail, setUserEmail] = useState("fahim@sprintflow.io");
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [xp, setXp] = useState(2480);
   const [coins, setCoins] = useState(240);
   const [streak, setStreak] = useState(5);

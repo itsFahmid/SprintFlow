@@ -99,7 +99,8 @@ interface PaymentItem {
 export default function SubscriptionPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState("Fahim Siddique");
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [isPro, setIsPro] = useState(true);
   const [daysLeft, setDaysLeft] = useState(89);
   const [totalDays, setTotalDays] = useState(92);
@@ -121,11 +122,12 @@ export default function SubscriptionPage() {
         }
         const data = await res.json();
         
-        // Also fetch user name
+        // Also fetch user name and email
         const userRes = await fetch("/api/auth/me");
         if (userRes.ok) {
           const userData = await userRes.json();
-          setUserName(userData.user.name);
+          setUserName(userData.user.name || "User");
+          setUserEmail(userData.user.email || "");
         }
 
         const sub = data.subscription;
@@ -385,8 +387,8 @@ export default function SubscriptionPage() {
                           currency: topItem.currency,
                           method: topItem.method,
                           date: topItem.date,
-                          customerName: userName,
-                          customerEmail: "fahim@sprintflow.io",
+                          customerName: userName || "User",
+                          customerEmail: userEmail || "",
                           endDateFormatted: endDateFormatted
                         });
                       }
@@ -432,8 +434,8 @@ export default function SubscriptionPage() {
                               currency: item.currency,
                               method: item.method,
                               date: item.date,
-                              customerName: userName,
-                              customerEmail: "fahim@sprintflow.io",
+                              customerName: userName || "User",
+                              customerEmail: userEmail || "",
                               endDateFormatted: endDateFormatted
                             });
                           }}

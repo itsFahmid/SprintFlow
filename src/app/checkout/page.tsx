@@ -59,6 +59,8 @@ function CheckoutContent() {
   const [accountNumber, setAccountNumber] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [successReceipt, setSuccessReceipt] = useState<{
     plan: string;
     amount: number;
@@ -72,6 +74,15 @@ function CheckoutContent() {
     if (planParam === "1_month" || planParam === "3_months") {
       setSelectedPlan(planParam);
     }
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.user) {
+          setUserName(data.user.name || "Customer");
+          setUserEmail(data.user.email || "");
+        }
+      })
+      .catch(() => {});
   }, [planParam]);
 
   const amount = selectedPlan === "3_months" ? 499 : 199;
@@ -219,8 +230,8 @@ function CheckoutContent() {
               currency: "BDT",
               method: successReceipt.method,
               date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
-              customerName: "Fahim Siddique",
-              customerEmail: "fahim@sprintflow.io",
+              customerName: userName || "Customer",
+              customerEmail: userEmail || "",
               endDateFormatted: successReceipt.endDateFormatted
             } : null}
           />

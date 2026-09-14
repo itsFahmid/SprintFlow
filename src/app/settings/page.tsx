@@ -94,10 +94,10 @@ export default function SettingsPage() {
   const [saveToast, setSaveToast] = useState(false);
 
   // Profile fields
-  const [name, setName] = useState("Fahim Siddique");
-  const [username, setUsername] = useState("@fahim");
-  const [email, setEmail] = useState("fahimsahmed01@gmail.com");
-  const [userPlan, setUserPlan] = useState("Pro");
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [userPlan, setUserPlan] = useState("Free");
 
   // Focus & Pomodoro fields
   const [sprintLength, setSprintLength] = useState(25);
@@ -147,8 +147,8 @@ export default function SettingsPage() {
         }
         const data = await res.json();
         const u = data.user;
-        setName(u.name || "Fahim Siddique");
-        setEmail(u.email || "fahimsahmed01@gmail.com");
+        setName(u.name || "User");
+        setEmail(u.email || "");
         if (u.subscription?.plan) setUserPlan(u.subscription.plan);
 
         const s = u.settings || {};

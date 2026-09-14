@@ -34,7 +34,7 @@ export default function AccountDeletedPage() {
             Your account has been deleted
           </h1>
           <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed max-w-sm mx-auto">
-            We're sorry to see you go, Fahim. Your data has been permanently removed. Thank you for the focused work — you're always welcome back.
+            We're sorry to see you go. Your data has been permanently removed. Thank you for the focused work — you're always welcome back.
           </p>
         </div>
 
