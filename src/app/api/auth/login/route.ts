@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getUserByEmail, createSession } from "@/lib/db";
+import { getUserByEmail, createSession, updateUser } from "@/lib/db";
+import { verifyPassword, hashPassword, isLegacyMockHash } from "@/lib/auth-passwords";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await req.json();
+    const { email, password, rememberMe } = await req.json();
 
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
@@ -15,14 +16,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
-    // Verify mock hash
-    const passwordHash = "mock_" + password;
-    if (user.passwordHash !== passwordHash) {
+    // Verify password with bcrypt (supports legacy mock_ fallback)
+    const isMatch = await verifyPassword(password, user.passwordHash);
+    if (!isMatch) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
-    // Generate session token (asynchronously)
-    const session = await createSession(user.id);
+    // Migration path for existing records:
+    // If stored hash is legacy mock_, immediately re-hash with bcrypt and persist
+    if (isLegacyMockHash(user.passwordHash)) {
+      // TODO(phase-2): remove legacy mock_ path
+      user.passwordHash = await hashPassword(password);
+      await updateUser(user);
+    }
+
+    // Generate cryptographic session token with custom duration
+    const isRemember = Boolean(rememberMe);
+    const session = await createSession(user.id, isRemember);
+    const maxAgeSeconds = isRemember ? 30 * 24 * 60 * 60 : 24 * 60 * 60; // 30 days vs 1 day
 
     // Set secure cookie
     const cookieStore = await cookies();
@@ -30,7 +41,7 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      maxAge: maxAgeSeconds,
       path: "/"
     });
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getSession, getUserById, updateUser, deleteSession } from "@/lib/db";
+import { verifyPassword, hashPassword, validatePassword } from "@/lib/auth-passwords";
 
 export async function GET(req: NextRequest) {
   try {
@@ -58,7 +59,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { action, name, username, email, settings, newPassword } = body;
+    const { action, name, username, email, settings, newPassword, currentPassword } = body;
 
     // 1. Export Data Action
     if (action === "export_data") {
@@ -94,8 +95,19 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Change Password Action
-    if (action === "change_password" && newPassword) {
-      user.passwordHash = newPassword;
+    if (action === "change_password") {
+      if (!currentPassword || !newPassword) {
+        return NextResponse.json({ error: "Current password and new password are required." }, { status: 400 });
+      }
+      const isCurrentMatch = await verifyPassword(currentPassword, user.passwordHash);
+      if (!isCurrentMatch) {
+        return NextResponse.json({ error: "Current password does not match." }, { status: 400 });
+      }
+      const validation = validatePassword(newPassword);
+      if (!validation.isValid) {
+        return NextResponse.json({ error: validation.error }, { status: 400 });
+      }
+      user.passwordHash = await hashPassword(newPassword);
       await updateUser(user);
       return NextResponse.json({ success: true, message: "Password updated successfully." });
     }

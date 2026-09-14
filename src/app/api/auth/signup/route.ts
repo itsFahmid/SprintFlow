@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createUser, getUserByEmail, createSession } from "@/lib/db";
+import { validatePassword, hashPassword } from "@/lib/auth-passwords";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,14 +11,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Name, email, and password are required" }, { status: 400 });
     }
 
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return NextResponse.json({ error: passwordValidation.error }, { status: 400 });
+    }
+
     // Check if email already registered (asynchronously)
     const existingUser = await getUserByEmail(email);
     if (existingUser) {
       return NextResponse.json({ error: "Email is already registered" }, { status: 400 });
     }
 
-    // Mock password hashing for local developer setup
-    const passwordHash = "mock_" + password;
+    // Hash password with bcrypt (cost factor 12)
+    const passwordHash = await hashPassword(password);
 
     // Create the user profile (asynchronously)
     const user = await createUser(name, email, passwordHash);
